@@ -1,0 +1,13 @@
+# Target labels
+ EspIdfBootloader
+# Source files and their labels
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/zephyr/soc/soc/xtensa/espressif_esp32/esp32/CMakeFiles/EspIdfBootloader
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/zephyr/soc/soc/xtensa/espressif_esp32/esp32/CMakeFiles/EspIdfBootloader.rule
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/zephyr/soc/soc/xtensa/espressif_esp32/esp32/CMakeFiles/EspIdfBootloader-complete.rule
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/esp-idf/src/EspIdfBootloader-stamp/EspIdfBootloader-build.rule
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/esp-idf/src/EspIdfBootloader-stamp/EspIdfBootloader-configure.rule
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/esp-idf/src/EspIdfBootloader-stamp/EspIdfBootloader-download.rule
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/esp-idf/src/EspIdfBootloader-stamp/EspIdfBootloader-install.rule
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/esp-idf/src/EspIdfBootloader-stamp/EspIdfBootloader-mkdir.rule
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/esp-idf/src/EspIdfBootloader-stamp/EspIdfBootloader-patch.rule
+/home/rog/zephyrproject/zephyr/tutorials/motor_control_prac/build/esp-idf/src/EspIdfBootloader-stamp/EspIdfBootloader-update.rule
