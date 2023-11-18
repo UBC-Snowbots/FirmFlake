@@ -31,7 +31,7 @@ struct Axis {
 
     int home_accel = 0;
     int start_accel = 250; 
-    int accel_intervals = 1; //should stay at 1 for maximum smoothness
+    int accel_slope = 1; //should stay at 1 for maximum smoothness
     int current_accel = 20000;
 
     int macrostep;
