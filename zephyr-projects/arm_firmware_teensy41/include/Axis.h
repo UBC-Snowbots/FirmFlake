@@ -23,15 +23,15 @@ struct Axis {
     //units here are usec per step
     int max_speed;
     int home_speed;
-    int current_speed = 10000;
-    int target_speed = 10000;
+    volatile int current_speed = 10000;
+    volatile int target_speed = 10000;
     int max_start_speed = 20000;
     int zero_speed = 10000; //limits minimum speed to a feasible start speed
 
 
     int home_accel = 0;
     int start_accel = 250; 
-    int accel_slope = 1; //should stay at 1 for maximum smoothness
+    int accel_slope = 10; //should stay at 1 for maximum smoothness
     int current_accel = 20000;
 
     int macrostep;

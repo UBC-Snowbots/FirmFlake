@@ -40,6 +40,7 @@ struct k_timer comm_timer;
 struct k_timer home_timer;
 struct k_timer pingStepPosition_timer;
 struct k_timer pingAnglePosition_timer;
+struct k_timer pingSpeed_timer;
 struct k_timer stepAll_timer;
 
 // struct k_msgq axes_msgqs[NUM_AXES];
@@ -245,6 +246,16 @@ void pingAnglePosition_timer_callback(struct k_timer *timer_id)
 	ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
 	uart_irq_tx_enable(dev);
 }
+void pingSpeed_timer_callback(struct k_timer *timer_id)
+{
+
+	//updateAngles();
+
+	char msg[TX_BUF_SIZE];
+	sprintf(msg, "$my_angleS(%d, %d, %d, %d, %d, %d)\n\r\0", axes[0].current_speed, axes[1].current_speed, axes[2].current_speed, axes[3].current_speed, axes[4].current_speed, axes[5].current_speed);
+	ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
+	uart_irq_tx_enable(dev);
+}
 
 void updateAngles()
 {
@@ -316,14 +327,14 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 		case 'w':
 			// debug cmd
 			// stepAxis(arpo);
-			sendMsg("Up\n");
-			axes[0].step_des_pos = axes[0].step_pos + 50;
+			sendMsg("UpNo\n");
+			//axes[0].step_des_pos = axes[0].step_pos + 50;
 			break;
 		case 'r':
-			sendMsg("Down\n");
+			sendMsg("DownNo\n");
 
 			// stepAxis(arpo);
-			axes[0].step_des_pos = axes[0].step_pos - 50;
+			//axes[0].step_des_pos = axes[0].step_pos - 50;
 
 			break;
 		default:
@@ -384,7 +395,7 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 		case 'P':
 			if (toggle_id == '1')
 			{
-				k_timer_start(&pingAnglePosition_timer, K_MSEC(20), K_MSEC(POSITION_PING_MS_INTERVAL));
+				k_timer_start(&pingAnglePosition_timer, K_MSEC(20), K_MSEC(SPEED_PING_MS_INTERVAL));
 				sendMsg("Success: COMM ON: Absolute Angle Position Callback \n");
 				break;
 			}
@@ -396,6 +407,23 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 				break;
 			}
 			sendMsg("ERROR: COMM: Absolute Angle Position Callback Toggle Identifier Rejected \n");
+
+			break;
+		case 'S':
+			if (toggle_id == '1')
+			{
+				k_timer_start(&pingSpeed_timer, K_MSEC(20), K_MSEC(SPEED_PING_MS_INTERVAL));
+				sendMsg("Success: COMM ON: Angle Speed Callback \n");
+				break;
+			}
+			if (toggle_id == '0')
+			{
+				k_timer_stop(&pingSpeed_timer);
+
+				sendMsg("Success: COMM OFF: Angle Speed Callback \n");
+				break;
+			}
+			sendMsg("ERROR: COMM: Speed Angle Callback Toggle Identifier Rejected \n");
 
 			break;
 
@@ -469,17 +497,12 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 			uart_irq_tx_enable(dev);
 			ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
 			uart_irq_tx_enable(dev);
-			// k_timer_start(&pingAnglePosition_timer, K_MSEC(50), K_NO_WAIT);
 
 			return;
 		}
 	}
 
-	// for (int i = 0; i < NUM_AXES; i++)
-	// {
-	// 	axes[i].step_des_pos = axes[i].des_angle_pos * red[i] * ppr[i] / 360.0;
-	// 	//k_timer_start(&pingAnglePosition_timer, K_MSEC(POSITION_PING_MS_INTERVAL), K_NO_WAIT);
-	// }
+
 }
 
 void testLimits()
@@ -499,6 +522,7 @@ void comm_timer_callback(struct k_timer *timer_id)
 		char tmpmsg[TX_BUF_SIZE];
 
 		sprintf(tmpmsg, "Limit Switch %d, is %d.  \n\r\0", i + 1, get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]));
+
 
 		sendMsg(tmpmsg);
 	}
@@ -967,17 +991,23 @@ void accelTimer_callback(struct k_timer *timer_id)
 			}
 			else
 			{
+				char tmpmsg[TX_BUF_SIZE];
+
 				if (axes[i].target_speed > axes[i].current_speed)
 				{
 					// arm needs to slow down
-					axes[i].current_speed += axes[i].accel_slope;//(axes[i].target_speed/(axes[i].current_speed*ACCEL_CURVE));
-					sendMsg("Slowing Down\n");
+					axes[i].current_speed = axes[i].current_speed + axes[i].accel_slope;//(axes[i].target_speed/(axes[i].current_speed*ACCEL_CURVE));
+		
+			
 				}
 				else if (axes[i].target_speed < axes[i].current_speed)
 				{
 					// arm needs to speed up
-					axes[i].current_speed -= axes[i].accel_slope;//(axes[i].current_speed/(axes[i].target_speed*ACCEL_CURVE));
-					sendMsg("Speeding Up\n");
+					axes[i].current_speed = axes[i].current_speed - axes[i].accel_slope;//(axes[i].current_speed/(axes[i].target_speed*ACCEL_CURVE));
+					
+
+		
+					
 
 				} // else{
 				  // right on target
@@ -987,6 +1017,42 @@ void accelTimer_callback(struct k_timer *timer_id)
 		}
 	}
 }
+//using pointers
+// void accelTimer_callback(struct k_timer *timer_id)
+// {
+//     // Use a pointer to iterate over axes
+//     for (Axis *axis = axes; axis < axes + NUM_AXES; axis++)
+//     {
+//         if (timer_id == &(axis->accel_timer))
+//         {
+//             if (axis->target_speed < axis->max_speed)
+//             {
+//                 axis->target_speed = axis->max_speed;
+//                 sendMsg("Target Speed Past Maximum\n");
+//             }
+//             else
+//             {
+//                 char tmpmsg[TX_BUF_SIZE];
+
+//                 if (axis->target_speed > axis->current_speed)
+//                 {
+//                     // Arm needs to slow down
+//                     axis->current_speed += axis->accel_slope;
+//                  //   sprintf(tmpmsg, "Slowing axis %d, speed is %d.  \n", (int)(axis - axes) + 1, axis->current_speed);
+//                 }
+//                 else if (axis->target_speed < axis->current_speed)
+//                 {
+//                     // Arm needs to speed up
+//                     axis->current_speed -= axis->accel_slope;
+//                   //  sprintf(tmpmsg, "Speeding axis %d, speed is %d.  \n", (int)(axis - axes) + 1, axis->current_speed);
+//                 }
+//                 // else right on target
+
+//                // sendMsg(tmpmsg);
+//             }
+//         }
+//     }
+// }
 
 void set_gpio(int dev, int pin, int value)
 {
@@ -1235,12 +1301,12 @@ int main(void)
 	axes[4].current_accel = 140;//degPerSecToUsecPerStep(1000.0, 4);
 	axes[5].current_accel = 150;//degPerSecToUsecPerStep(1000.0, 5);
 
-	axes[0].max_start_speed = degPerSecToUsecPerStep(5.0, 0);
-	axes[1].max_start_speed = degPerSecToUsecPerStep(3.0, 1);
-	axes[2].max_start_speed = degPerSecToUsecPerStep(4.0, 2);
-	axes[3].max_start_speed = degPerSecToUsecPerStep(5.0, 3);
-	axes[4].max_start_speed = degPerSecToUsecPerStep(5.0, 4);
-	axes[5].max_start_speed = degPerSecToUsecPerStep(5.0, 5);
+	axes[0].max_start_speed = degPerSecToUsecPerStep(15.0, 0);
+	axes[1].max_start_speed = degPerSecToUsecPerStep(13.0, 1);
+	axes[2].max_start_speed = degPerSecToUsecPerStep(14.0, 2);
+	axes[3].max_start_speed = degPerSecToUsecPerStep(15.0, 3);
+	axes[4].max_start_speed = degPerSecToUsecPerStep(15.0, 4);
+	axes[5].max_start_speed = degPerSecToUsecPerStep(15.0, 5);
 
 	// 1 or 0 for dir setting
 	axes[0].home_dir = 1;
@@ -1278,13 +1344,13 @@ int main(void)
 	k_timer_init(&comm_timer, comm_timer_callback, NULL);							// pass user data to callback
 	k_timer_init(&home_timer, home_timer_callback, NULL);							// pass user data to callback
 	k_timer_init(&stepAll_timer, stepAll_timer_callback, NULL);						// pass user data to callback
-	k_timer_init(&pingAnglePosition_timer, pingAnglePosition_timer_callback, NULL); // pass user data to callback
-	// k_timer_init(&pingPosition_timer, pingPosition_timer_callback, NULL); // pass user data to callback
-
+	k_timer_init(&pingAnglePosition_timer, pingAnglePosition_timer_callback, NULL); 
+	k_timer_init(&pingSpeed_timer, pingSpeed_timer_callback, NULL); // pass user data to callback
+	
 	k_timer_start(&stepAll_timer, K_NO_WAIT, K_USEC(200)); // should be 5-10 times slower than the slowest stepper -- nevermind
 	for (int i = 0; i < NUM_AXES; i++)
 	{
-		k_timer_start(&axes[i].accel_timer, K_NO_WAIT, K_USEC(axes[i].current_accel));
+		k_timer_start(&axes[i].accel_timer, K_NO_WAIT, K_MSEC(axes[i].current_accel));
 	}
 	// k_timer_start(&pingAnglePosition_timer, K_NO_WAIT, K_MSEC(25));
 

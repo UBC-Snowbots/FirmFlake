@@ -66,6 +66,9 @@ this is not easy
 
 #define POSITION_PING_MS_INTERVAL 75 // 50ms is 20 hz
 
+#define SPEED_PING_MS_INTERVAL 150 // 50ms is 20 hz
+
+
 #define ARM_COMM_RATE 20 //Hz, only here for refrence
 
 //comm characters
