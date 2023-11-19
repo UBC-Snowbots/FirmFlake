@@ -996,14 +996,14 @@ void accelTimer_callback(struct k_timer *timer_id)
 				if (axes[i].target_speed > axes[i].current_speed)
 				{
 					// arm needs to slow down
-					axes[i].current_speed = axes[i].current_speed + axes[i].accel_slope;//(axes[i].target_speed/(axes[i].current_speed*ACCEL_CURVE));
+					axes[i].current_speed = axes[i].current_speed + 10;//axes[i].accel_slope;//(axes[i].target_speed/(axes[i].current_speed*ACCEL_CURVE));
 		
 			
 				}
 				else if (axes[i].target_speed < axes[i].current_speed)
 				{
 					// arm needs to speed up
-					axes[i].current_speed = axes[i].current_speed - axes[i].accel_slope;//(axes[i].current_speed/(axes[i].target_speed*ACCEL_CURVE));
+					axes[i].current_speed = axes[i].current_speed - 10;//axes[i].accel_slope;//(axes[i].current_speed/(axes[i].target_speed*ACCEL_CURVE));
 					
 
 		
@@ -1294,19 +1294,19 @@ int main(void)
 	axes[4].home_speed = degPerSecToUsecPerStep(30.0, 4);
 	axes[5].home_speed = degPerSecToUsecPerStep(20.0, 5);
 
-	axes[0].current_accel = 100;//degPerSecToUsecPerStep(1000.0, 0);
-	axes[1].current_accel = 110;//degPerSecToUsecPerStep(1000.0, 1);
-	axes[2].current_accel = 120;//degPerSecToUsecPerStep(1000.0, 2);
-	axes[3].current_accel = 130;//degPerSecToUsecPerStep(1000.0, 3);
-	axes[4].current_accel = 140;//degPerSecToUsecPerStep(1000.0, 4);
-	axes[5].current_accel = 150;//degPerSecToUsecPerStep(1000.0, 5);
+	axes[0].current_accel = degPerSecToUsecPerStep(50.0, 0);
+	axes[1].current_accel = degPerSecToUsecPerStep(50.0, 1);
+	axes[2].current_accel = degPerSecToUsecPerStep(50.0, 2);
+	axes[3].current_accel = degPerSecToUsecPerStep(50.0, 3);
+	axes[4].current_accel = degPerSecToUsecPerStep(50.0, 4);
+	axes[5].current_accel = degPerSecToUsecPerStep(50.0, 5);
 
-	axes[0].max_start_speed = degPerSecToUsecPerStep(15.0, 0);
-	axes[1].max_start_speed = degPerSecToUsecPerStep(13.0, 1);
-	axes[2].max_start_speed = degPerSecToUsecPerStep(14.0, 2);
-	axes[3].max_start_speed = degPerSecToUsecPerStep(15.0, 3);
-	axes[4].max_start_speed = degPerSecToUsecPerStep(15.0, 4);
-	axes[5].max_start_speed = degPerSecToUsecPerStep(15.0, 5);
+	axes[0].max_start_speed = degPerSecToUsecPerStep(5.0, 0);
+	axes[1].max_start_speed = degPerSecToUsecPerStep(3.0, 1);
+	axes[2].max_start_speed = degPerSecToUsecPerStep(4.0, 2);
+	axes[3].max_start_speed = degPerSecToUsecPerStep(5.0, 3);
+	axes[4].max_start_speed = degPerSecToUsecPerStep(5.0, 4);
+	axes[5].max_start_speed = degPerSecToUsecPerStep(5.0, 5);
 
 	// 1 or 0 for dir setting
 	axes[0].home_dir = 1;
@@ -1315,6 +1315,8 @@ int main(void)
 	axes[3].home_dir = 0;
 	axes[4].home_dir = 0;
 	axes[5].home_dir = 1;
+
+	//accellerations
 
 	axes[0].max_step_pos = angleToSteps(180.0, 0) - POSITION_STEP_LIMIT_THRESHOLD;
 	axes[1].max_step_pos = angleToSteps(180.0, 1) - POSITION_STEP_LIMIT_THRESHOLD; //TODO: WARN DANGER 
@@ -1350,7 +1352,7 @@ int main(void)
 	k_timer_start(&stepAll_timer, K_NO_WAIT, K_USEC(200)); // should be 5-10 times slower than the slowest stepper -- nevermind
 	for (int i = 0; i < NUM_AXES; i++)
 	{
-		k_timer_start(&axes[i].accel_timer, K_NO_WAIT, K_MSEC(axes[i].current_accel));
+		k_timer_start(&axes[i].accel_timer, K_USEC(50), K_MSEC(axes[i].current_accel));
 	}
 	// k_timer_start(&pingAnglePosition_timer, K_NO_WAIT, K_MSEC(25));
 
