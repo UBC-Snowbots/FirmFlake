@@ -6,6 +6,8 @@
 #define POSITION_STEP_LIMIT_THRESHOLD 50
 
 struct Axis {
+
+    //variables don't get properly set here, even if "int foo = 1000;" foo will still equal 0. initilize in the main function of main.cpp
    // Axis(int dirPin, int stepPin, int encPinA, int encPinB, long ppr, float reduction);
     //setup pins
     int index;
