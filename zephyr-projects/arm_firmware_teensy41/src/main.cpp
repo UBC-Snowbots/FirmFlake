@@ -570,6 +570,7 @@ void home_timer_callback(struct k_timer *timer_id)
 					axes[i].homing = false;
 					// zero out
 					axes[i].target_speed = axes[i].max_speed;
+					axes[i].current_speed = axes[i].max_start_speed;
 					axes[i].step_pos = 0;
 					axes[i].step_des_pos = axes[i].preset_step_pos[DEFAULT_POSITION];
 					char msg[TX_BUF_SIZE];
@@ -941,9 +942,9 @@ void stepAxis(int axis)
 		if (dir_signal != axes[axis].last_dir)
 		{
 			// zero speed of axis if direction changes
-			if(axes[axis].target_speed < axes[axis].max_start_speed){
+			if(axes[axis].target_speed < axes[axis].max_start_speed){ //higher speed value equates to larger step time, speed variables are inversley poportional to the axis' speed... im bad at naming variables
 			axes[axis].current_speed = axes[axis].max_start_speed;
-			axes[axis].target_speed = axes[axis].max_start_speed;
+			//axes[axis].target_speed = axes[axis].max_start_speed;
 			}else{
 				//if its slower, move instantly
 			axes[axis].current_speed = axes[axis].target_speed;
@@ -983,6 +984,7 @@ void accelTimer_callback(struct k_timer *timer_id)
 	{
 		if (timer_id == &axes[i].accel_timer)
 		{
+			if(axes[i].moving){
 			if (axes[i].target_speed < axes[i].max_speed)
 			{
 				// arm target speed is past max speed
@@ -990,20 +992,20 @@ void accelTimer_callback(struct k_timer *timer_id)
 				sendMsg("Target Speed Past Maximum\n");
 			}
 			else
-			{
+			{ //TODO, make acceleration respective to target vs current speed
 				char tmpmsg[TX_BUF_SIZE];
 
 				if (axes[i].target_speed > axes[i].current_speed)
 				{
 					// arm needs to slow down
-					axes[i].current_speed = axes[i].current_speed + axes[i].accel_slope;//axes[i].accel_slope;//(axes[i].target_speed/(axes[i].current_speed*ACCEL_CURVE));
+					axes[i].current_speed = axes[i].current_speed + (axes[i].target_speed/(axes[i].current_speed*axes[i].accel_slope));
 		
 			
 				}
 				else if (axes[i].target_speed < axes[i].current_speed)
 				{
 					// arm needs to speed up
-					axes[i].current_speed = axes[i].current_speed - axes[i].accel_slope;//axes[i].accel_slope;//(axes[i].current_speed/(axes[i].target_speed*ACCEL_CURVE));
+					axes[i].current_speed = axes[i].current_speed - (axes[i].current_speed/(axes[i].target_speed*axes[i].accel_slope));
 					
 
 		
@@ -1013,6 +1015,9 @@ void accelTimer_callback(struct k_timer *timer_id)
 				  // right on target
 
 				//}
+			}
+			}else{
+				axes[i].current_speed = axes[i].max_start_speed;
 			}
 		}
 	}
@@ -1280,26 +1285,26 @@ int main(void)
 	// //initiate axes, im sure there is a better way to orginize all this data
 
 	// degPerSec converter functions use axes data, so need to be called after initiation//nvm
-	axes[0].max_speed = degPerSecToUsecPerStep(80.0, 0);  // 500;
-	axes[1].max_speed = degPerSecToUsecPerStep(80.0, 1);	  // 800;
-	axes[2].max_speed = degPerSecToUsecPerStep(80.0, 2);  // 700;
-	axes[3].max_speed = degPerSecToUsecPerStep(80.0, 3); // 700;
-	axes[4].max_speed = degPerSecToUsecPerStep(80.0, 4);  // 600;
-	axes[5].max_speed = degPerSecToUsecPerStep(80.0, 5);  // 5800;
+	axes[0].max_speed = degPerSecToUsecPerStep(40.0, 0);  // 500;
+	axes[1].max_speed = degPerSecToUsecPerStep(40.0, 1);	  // 800;
+	axes[2].max_speed = degPerSecToUsecPerStep(40.0, 2);  // 700;
+	axes[3].max_speed = degPerSecToUsecPerStep(40.0, 3); // 700;
+	axes[4].max_speed = degPerSecToUsecPerStep(40.0, 4);  // 600;
+	axes[5].max_speed = degPerSecToUsecPerStep(40.0, 5);  // 5800;
 														  // can be cleaned up, but for now I'm leaving it like this
-	axes[0].home_speed = degPerSecToUsecPerStep(40.0, 0);
-	axes[1].home_speed = degPerSecToUsecPerStep(20.0, 1);
+	axes[0].home_speed = degPerSecToUsecPerStep(30.0, 0);
+	axes[1].home_speed = degPerSecToUsecPerStep(17.0, 1);
 	axes[2].home_speed = degPerSecToUsecPerStep(30.0, 2);
-	axes[3].home_speed = degPerSecToUsecPerStep(40.0, 3);
+	axes[3].home_speed = degPerSecToUsecPerStep(30.0, 3);
 	axes[4].home_speed = degPerSecToUsecPerStep(30.0, 4);
 	axes[5].home_speed = degPerSecToUsecPerStep(20.0, 5);
 
-	axes[0].max_start_speed = degPerSecToUsecPerStep(5.0, 0);
+	axes[0].max_start_speed = degPerSecToUsecPerStep(3.0, 0);
 	axes[1].max_start_speed = degPerSecToUsecPerStep(3.0, 1);
-	axes[2].max_start_speed = degPerSecToUsecPerStep(4.0, 2);
-	axes[3].max_start_speed = degPerSecToUsecPerStep(5.0, 3);
-	axes[4].max_start_speed = degPerSecToUsecPerStep(5.0, 4);
-	axes[5].max_start_speed = degPerSecToUsecPerStep(5.0, 5);
+	axes[2].max_start_speed = degPerSecToUsecPerStep(3.0, 2);
+	axes[3].max_start_speed = degPerSecToUsecPerStep(3.0, 3);
+	axes[4].max_start_speed = degPerSecToUsecPerStep(3.0, 4);
+	axes[5].max_start_speed = degPerSecToUsecPerStep(3.0, 5);
 
 	// 1 or 0 for dir setting
 	axes[0].home_dir = 1;
@@ -1310,19 +1315,19 @@ int main(void)
 	axes[5].home_dir = 1;
 
 	//accellerations
-	axes[0].current_accel = degPerSecToUsecPerStep(50.0, 0);
-	axes[1].current_accel = degPerSecToUsecPerStep(50.0, 1);
-	axes[2].current_accel = degPerSecToUsecPerStep(50.0, 2);
-	axes[3].current_accel = degPerSecToUsecPerStep(50.0, 3);
-	axes[4].current_accel = degPerSecToUsecPerStep(50.0, 4);
-	axes[5].current_accel = degPerSecToUsecPerStep(50.0, 5);
+	axes[0].current_accel = degPerSecToUsecPerStep(2.5, 0);
+	axes[1].current_accel = degPerSecToUsecPerStep(2.5, 1);
+	axes[2].current_accel = degPerSecToUsecPerStep(2.5, 2);
+	axes[3].current_accel = degPerSecToUsecPerStep(2.5, 3);
+	axes[4].current_accel = degPerSecToUsecPerStep(2.5, 4);
+	axes[5].current_accel = degPerSecToUsecPerStep(2.5, 5);
 
 	axes[0].accel_slope = 5;
-	axes[1].accel_slope = 5;
-	axes[2].accel_slope = 5;
-	axes[3].accel_slope = 5;
-	axes[4].accel_slope = 5;
-	axes[5].accel_slope = 5;
+	axes[1].accel_slope = 6;
+	axes[2].accel_slope = 3;
+	axes[3].accel_slope = 3;
+	axes[4].accel_slope = 3;
+	axes[5].accel_slope = 3;
 
 
 	axes[0].max_step_pos = angleToSteps(180.0, 0) - POSITION_STEP_LIMIT_THRESHOLD;
@@ -1336,7 +1341,7 @@ int main(void)
 	{
 		axes[i].dir = !axes[i].home_dir;
 		axes[i].target_speed = axes[i].home_speed;
-		axes[i].zero_speed = degPerSecToUsecPerStep(0.1, i);
+		//axes[i].zero_speed = degPerSecToUsecPerStep(0.1, i);
 		axes[i].current_speed = axes[i].max_start_speed;
 		k_timer_init(&axes[i].stepper_timer, stepper_timer_callback, NULL); // pass user data to callback
 		k_timer_init(&axes[i].accel_timer, accelTimer_callback, NULL);		// pass user data to callback
@@ -1345,7 +1350,7 @@ int main(void)
 
 	axes[0].preset_step_pos[DEFAULT_POSITION] = angleToSteps(60.0, 0);
 	axes[1].preset_step_pos[DEFAULT_POSITION] = angleToSteps(45.0, 1);
-	axes[2].preset_step_pos[DEFAULT_POSITION] = angleToSteps(0.0, 2);
+	axes[2].preset_step_pos[DEFAULT_POSITION] = angleToSteps(20.0, 2);
 	axes[3].preset_step_pos[DEFAULT_POSITION] = angleToSteps(110.0, 3);
 	axes[4].preset_step_pos[DEFAULT_POSITION] = angleToSteps(127.5, 4);
 	axes[5].preset_step_pos[DEFAULT_POSITION] = angleToSteps(15.0, 5);
