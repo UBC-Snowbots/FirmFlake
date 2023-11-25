@@ -252,7 +252,7 @@ void pingSpeed_timer_callback(struct k_timer *timer_id)
 	//updateAngles();
 
 	char msg[TX_BUF_SIZE];
-	sprintf(msg, "$my_angleS(%d, %d, %d, %d, %d, %d)\n\r\0", axes[0].current_speed, axes[1].current_speed, axes[2].current_speed, axes[3].current_speed, axes[4].current_speed, axes[5].current_speed);
+	sprintf(msg, "$my_angleS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n\r\0", axes[0].current_speed, axes[0].target_speed, axes[1].current_speed, axes[1].target_speed, axes[2].current_speed, axes[2].target_speed, axes[3].current_speed, axes[3].target_speed, axes[4].current_speed, axes[4].target_speed, axes[5].current_speed, axes[5].target_speed);
 	ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
 	uart_irq_tx_enable(dev);
 }
@@ -643,6 +643,7 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		strncpy(angle_str, start_ptr, end_ptr - start_ptr);
 		angle_str[end_ptr - start_ptr] = '\n';	 // Null-terminate
 		axes[i].des_angle_pos = atof(angle_str); // will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
+		axes[i].target_speed = axes[i].max_speed;
 
 		start_ptr = end_ptr + 1; // Move to the character after the comma
 		i++;
@@ -691,6 +692,9 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 	for (int i = 0; i < NUM_AXES; i++)
 	{
 		axes[i].step_des_pos = angleToSteps(axes[i].des_angle_pos, i);
+		//WARN
+		axes[i].target_speed = axes[i].max_speed;
+
 	}
 }
 
@@ -741,6 +745,7 @@ void parseIncrementalTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		axes[i].step_des_pos = axes[i].step_pos + angleToSteps(angle, i);
 		//} else if(atof(angle_str) < 0){
 		// axes[i].step_des_pos = axes[i].step_pos - (int)angle;
+			axes[i].target_speed = axes[i].max_speed;
 
 		//} else{
 		// axes[i].step_des_pos = axes[i].step_pos;
@@ -762,6 +767,8 @@ void parseIncrementalTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 			float angle = atof(angle_str);
 			// if(angle > 0){
 			axes[i].step_des_pos = axes[i].step_pos + angleToSteps(angle, i);
+			axes[i].target_speed = axes[i].max_speed;
+
 			// } else if(atof(angle_str) < 0){
 			// axes[i].step_des_pos = axes[i].step_pos - (int)angle;
 
@@ -985,6 +992,13 @@ void accelTimer_callback(struct k_timer *timer_id)
 		if (timer_id == &axes[i].accel_timer)
 		{
 			if(axes[i].moving){
+			if(axes[i].steps_remaining <= axes[i].decel_min_steps && !axes[i].homing){
+				//maybe a static variable that will initiate a decceleration, overiding the accelleration.
+				//however this should be based on the current speed of the arm too
+			float deceleration_factor = static_cast<float>(axes[i].steps_remaining) / axes[i].decel_min_steps;
+			axes[i].target_speed = std::min(static_cast<int>(axes[i].current_speed / deceleration_factor), axes[i].max_start_speed);
+			}
+			
 			if (axes[i].target_speed < axes[i].max_speed)
 			{
 				// arm target speed is past max speed
@@ -1292,12 +1306,13 @@ int main(void)
 	axes[4].max_speed = degPerSecToUsecPerStep(40.0, 4);  // 600;
 	axes[5].max_speed = degPerSecToUsecPerStep(40.0, 5);  // 5800;
 														  // can be cleaned up, but for now I'm leaving it like this
-	axes[0].home_speed = degPerSecToUsecPerStep(30.0, 0);
-	axes[1].home_speed = degPerSecToUsecPerStep(17.0, 1);
-	axes[2].home_speed = degPerSecToUsecPerStep(30.0, 2);
-	axes[3].home_speed = degPerSecToUsecPerStep(30.0, 3);
-	axes[4].home_speed = degPerSecToUsecPerStep(30.0, 4);
-	axes[5].home_speed = degPerSecToUsecPerStep(20.0, 5);
+	
+	axes[0].home_speed = degPerSecToUsecPerStep(20.0, 0);
+	axes[1].home_speed = degPerSecToUsecPerStep(14.0, 1);
+	axes[2].home_speed = degPerSecToUsecPerStep(20.0, 2);
+	axes[3].home_speed = degPerSecToUsecPerStep(20.0, 3);
+	axes[4].home_speed = degPerSecToUsecPerStep(20.0, 4);
+	axes[5].home_speed = degPerSecToUsecPerStep(25.0, 5);
 
 	axes[0].max_start_speed = degPerSecToUsecPerStep(3.0, 0);
 	axes[1].max_start_speed = degPerSecToUsecPerStep(3.0, 1);
@@ -1315,20 +1330,26 @@ int main(void)
 	axes[5].home_dir = 1;
 
 	//accellerations
-	axes[0].current_accel = degPerSecToUsecPerStep(2.5, 0);
-	axes[1].current_accel = degPerSecToUsecPerStep(2.5, 1);
-	axes[2].current_accel = degPerSecToUsecPerStep(2.5, 2);
-	axes[3].current_accel = degPerSecToUsecPerStep(2.5, 3);
-	axes[4].current_accel = degPerSecToUsecPerStep(2.5, 4);
-	axes[5].current_accel = degPerSecToUsecPerStep(2.5, 5);
+	axes[0].current_accel = degPerSecToUsecPerStep(20.0, 0);
+	axes[1].current_accel = degPerSecToUsecPerStep(20.0, 1);
+	axes[2].current_accel = degPerSecToUsecPerStep(20.0, 2);
+	axes[3].current_accel = degPerSecToUsecPerStep(20.0, 3);
+	axes[4].current_accel = degPerSecToUsecPerStep(20.0, 4);
+	axes[5].current_accel = degPerSecToUsecPerStep(20.0, 5);
 
-	axes[0].accel_slope = 5;
-	axes[1].accel_slope = 6;
-	axes[2].accel_slope = 3;
-	axes[3].accel_slope = 3;
-	axes[4].accel_slope = 3;
-	axes[5].accel_slope = 3;
-
+	axes[0].accel_slope = 1;
+	axes[1].accel_slope = 1;
+	axes[2].accel_slope = 1;
+	axes[3].accel_slope = 1;
+	axes[4].accel_slope = 1;
+	axes[5].accel_slope = 1;
+	
+	axes[0].decel_min_steps = 500;
+	axes[1].decel_min_steps = 2000;
+	axes[2].decel_min_steps = 300;
+	axes[3].decel_min_steps = 300;
+	axes[4].decel_min_steps = 200;
+	axes[5].decel_min_steps = 100;
 
 	axes[0].max_step_pos = angleToSteps(180.0, 0) - POSITION_STEP_LIMIT_THRESHOLD;
 	axes[1].max_step_pos = angleToSteps(180.0, 1) - POSITION_STEP_LIMIT_THRESHOLD; //TODO: WARN DANGER 
@@ -1341,7 +1362,7 @@ int main(void)
 	{
 		axes[i].dir = !axes[i].home_dir;
 		axes[i].target_speed = axes[i].home_speed;
-		//axes[i].zero_speed = degPerSecToUsecPerStep(0.1, i);
+		axes[i].zero_speed = degPerSecToUsecPerStep(0.01, i);
 		axes[i].current_speed = axes[i].max_start_speed;
 		k_timer_init(&axes[i].stepper_timer, stepper_timer_callback, NULL); // pass user data to callback
 		k_timer_init(&axes[i].accel_timer, accelTimer_callback, NULL);		// pass user data to callback

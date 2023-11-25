@@ -53,6 +53,8 @@ struct Axis {
     long step_pos = 0; // not from encoders
     long step_des_pos;
 
+    long decel_min_steps;
+
     float des_angle_pos = 0.0;
     float angle_pos = 0.0;
     //float max_angle_
