@@ -395,7 +395,7 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 		case 'P':
 			if (toggle_id == '1')
 			{
-				k_timer_start(&pingAnglePosition_timer, K_MSEC(20), K_MSEC(SPEED_PING_MS_INTERVAL));
+				k_timer_start(&pingAnglePosition_timer, K_MSEC(20), K_MSEC(POSITION_PING_MS_INTERVAL));
 				sendMsg("Success: COMM ON: Absolute Angle Position Callback \n");
 				break;
 			}
@@ -903,6 +903,7 @@ void parseHomeCmd(uint8_t homeCmd[RX_BUF_SIZE])
 
 void homeAllAxes()
 {
+	//TODO: let go of this 
 }
 
 // void stepTo(){
@@ -1012,14 +1013,14 @@ void accelTimer_callback(struct k_timer *timer_id)
 				if (axes[i].target_speed > axes[i].current_speed)
 				{
 					// arm needs to slow down
-					axes[i].current_speed = axes[i].current_speed + (axes[i].target_speed/(axes[i].current_speed*axes[i].accel_slope));
+					axes[i].current_speed = axes[i].current_speed + (axes[i].target_speed*axes[i].accel_slope/(axes[i].current_speed));
 		
 			
 				}
 				else if (axes[i].target_speed < axes[i].current_speed)
 				{
 					// arm needs to speed up
-					axes[i].current_speed = axes[i].current_speed - (axes[i].current_speed/(axes[i].target_speed*axes[i].accel_slope));
+					axes[i].current_speed = axes[i].current_speed - (axes[i].current_speed*axes[i].accel_slope/(axes[i].target_speed));
 					
 
 		
@@ -1299,12 +1300,12 @@ int main(void)
 	// //initiate axes, im sure there is a better way to orginize all this data
 
 	// degPerSec converter functions use axes data, so need to be called after initiation//nvm
-	axes[0].max_speed = degPerSecToUsecPerStep(40.0, 0);  // 500;
+	axes[0].max_speed = degPerSecToUsecPerStep(60.0, 0);  // 500;
 	axes[1].max_speed = degPerSecToUsecPerStep(40.0, 1);	  // 800;
-	axes[2].max_speed = degPerSecToUsecPerStep(40.0, 2);  // 700;
-	axes[3].max_speed = degPerSecToUsecPerStep(40.0, 3); // 700;
-	axes[4].max_speed = degPerSecToUsecPerStep(40.0, 4);  // 600;
-	axes[5].max_speed = degPerSecToUsecPerStep(40.0, 5);  // 5800;
+	axes[2].max_speed = degPerSecToUsecPerStep(60.0, 2);  // 700;
+	axes[3].max_speed = degPerSecToUsecPerStep(70.0, 3); // 700;
+	axes[4].max_speed = degPerSecToUsecPerStep(60.0, 4);  // 600;
+	axes[5].max_speed = degPerSecToUsecPerStep(70.0, 5);  // 5800;
 														  // can be cleaned up, but for now I'm leaving it like this
 	
 	axes[0].home_speed = degPerSecToUsecPerStep(20.0, 0);
@@ -1330,26 +1331,26 @@ int main(void)
 	axes[5].home_dir = 1;
 
 	//accellerations
-	axes[0].current_accel = degPerSecToUsecPerStep(20.0, 0);
-	axes[1].current_accel = degPerSecToUsecPerStep(20.0, 1);
-	axes[2].current_accel = degPerSecToUsecPerStep(20.0, 2);
-	axes[3].current_accel = degPerSecToUsecPerStep(20.0, 3);
-	axes[4].current_accel = degPerSecToUsecPerStep(20.0, 4);
-	axes[5].current_accel = degPerSecToUsecPerStep(20.0, 5);
+	axes[0].current_accel = degPerSecToUsecPerStep(13.0, 0);
+	axes[1].current_accel = degPerSecToUsecPerStep(10.0, 1);
+	axes[2].current_accel = degPerSecToUsecPerStep(10.0, 2);
+	axes[3].current_accel = degPerSecToUsecPerStep(15.0, 3);
+	axes[4].current_accel = degPerSecToUsecPerStep(15.0, 4);
+	axes[5].current_accel = degPerSecToUsecPerStep(10.0, 5);
 
-	axes[0].accel_slope = 1;
+	axes[0].accel_slope = 2;
 	axes[1].accel_slope = 1;
-	axes[2].accel_slope = 1;
-	axes[3].accel_slope = 1;
-	axes[4].accel_slope = 1;
-	axes[5].accel_slope = 1;
+	axes[2].accel_slope = 2;
+	axes[3].accel_slope = 2;
+	axes[4].accel_slope = 2;
+	axes[5].accel_slope = 2;
 	
-	axes[0].decel_min_steps = 500;
-	axes[1].decel_min_steps = 2000;
-	axes[2].decel_min_steps = 300;
-	axes[3].decel_min_steps = 300;
-	axes[4].decel_min_steps = 200;
-	axes[5].decel_min_steps = 100;
+	axes[0].decel_min_steps = angleToSteps(2.0, 0);
+	axes[1].decel_min_steps = angleToSteps(2.0, 1);
+	axes[2].decel_min_steps = angleToSteps(2.0, 2);
+	axes[3].decel_min_steps = angleToSteps(2.0, 3);
+	axes[4].decel_min_steps = angleToSteps(1.0, 4);
+	axes[5].decel_min_steps = angleToSteps(1.0, 5);
 
 	axes[0].max_step_pos = angleToSteps(180.0, 0) - POSITION_STEP_LIMIT_THRESHOLD;
 	axes[1].max_step_pos = angleToSteps(180.0, 1) - POSITION_STEP_LIMIT_THRESHOLD; //TODO: WARN DANGER 

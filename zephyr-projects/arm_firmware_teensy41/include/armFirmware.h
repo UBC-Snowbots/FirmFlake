@@ -64,7 +64,7 @@ this is not easy
 #define NUM_PRESET_POSITIONS 1
 #define DEFAULT_POSITION 0
 
-#define POSITION_PING_MS_INTERVAL 75 // 50ms is 20 hz
+#define POSITION_PING_MS_INTERVAL 50 // 50ms is 20 hz
 
 #define SPEED_PING_MS_INTERVAL 150 // 50ms is 20 hz
 
