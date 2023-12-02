@@ -239,7 +239,8 @@ void pingStepPosition_timer_callback(struct k_timer *timer_id)
 void pingAnglePosition_timer_callback(struct k_timer *timer_id)
 {
 
-	updateAngles();
+	 updateAngles();
+
 
 	char msg[TX_BUF_SIZE];
 	sprintf(msg, "$my_angleP(%0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f)\n\r\0", axes[0].angle_pos, axes[1].angle_pos, axes[2].angle_pos, axes[3].angle_pos, axes[4].angle_pos, axes[5].angle_pos);
@@ -248,8 +249,6 @@ void pingAnglePosition_timer_callback(struct k_timer *timer_id)
 }
 void pingSpeed_timer_callback(struct k_timer *timer_id)
 {
-
-	//updateAngles();
 
 	char msg[TX_BUF_SIZE];
 	sprintf(msg, "$my_angleS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n\r\0", axes[0].current_speed, axes[0].target_speed, axes[1].current_speed, axes[1].target_speed, axes[2].current_speed, axes[2].target_speed, axes[3].current_speed, axes[3].target_speed, axes[4].current_speed, axes[4].target_speed, axes[5].current_speed, axes[5].target_speed);
@@ -395,7 +394,7 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 		case 'P':
 			if (toggle_id == '1')
 			{
-				k_timer_start(&pingAnglePosition_timer, K_MSEC(20), K_MSEC(POSITION_PING_MS_INTERVAL));
+				k_timer_start(&pingAnglePosition_timer, K_MSEC(2), K_MSEC(POSITION_PING_MS_INTERVAL));
 				sendMsg("Success: COMM ON: Absolute Angle Position Callback \n");
 				break;
 			}
@@ -1277,6 +1276,7 @@ int main(void)
 		axes[i].macrostep = 15;
 		axes[i].dir = 1;
 		axes[i].homing = 0;
+		axes[i].step_pos = 0;
 
 		axes[i].attach(); // must be called after pins declared
 
