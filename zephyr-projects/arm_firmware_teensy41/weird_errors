@@ -1,0 +1,32 @@
+ok, angle update prob:
+comm is pinging at 20hz --> perfect
+but angles were only updating at weird intervals with this:
+void updateAngles()
+{
+	for (int i = 0; i < NUM_AXES; i++)
+	{
+		axes[i].angle_pos = (float)(axes[i].step_pos / ppr[i] / red[i] * 360.00);
+	}
+}
+
+
+ 
+now with this: 
+void updateAngles()
+{
+        for (int i = 0; i < NUM_AXES; i++)
+        {
+                axes[i].angle_pos = stepsToAngle(axes[i].step_pos, i);
+        }
+}
+
+
+
+float stepsToAngle(int steps, int i)
+{
+
+	return (float)((steps * 360.0) / (ppr[i] * red[i]));
+}
+
+works fine
+

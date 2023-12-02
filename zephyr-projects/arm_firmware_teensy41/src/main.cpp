@@ -260,8 +260,9 @@ void updateAngles()
 {
 	for (int i = 0; i < NUM_AXES; i++)
 	{
-		axes[i].angle_pos = (float)(axes[i].step_pos / ppr[i] / red[i] * 360.00);
-	}
+		axes[i].angle_pos = stepsToAngle(axes[i].step_pos, i);
+		
+		}
 }
 
 // P(120.00, 20.00, 10.00, 90.0, 70.30, 70.51)
@@ -403,6 +404,23 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 				k_timer_stop(&pingAnglePosition_timer);
 
 				sendMsg("Success: COMM OFF: Absolute Angle Position Callback \n");
+				break;
+			}
+			sendMsg("ERROR: COMM: Absolute Angle Position Callback Toggle Identifier Rejected \n");
+
+			break;
+		case 's':
+			if (toggle_id == '1')
+			{
+				k_timer_start(&pingStepPosition_timer, K_MSEC(2), K_MSEC(POSITION_PING_MS_INTERVAL));
+				sendMsg("Success: COMM ON: Absolute Step Position Callback \n");
+				break;
+			}
+			if (toggle_id == '0')
+			{
+				k_timer_stop(&pingStepPosition_timer);
+
+				sendMsg("Success: COMM OFF: Absolute Step Position Callback \n");
 				break;
 			}
 			sendMsg("ERROR: COMM: Absolute Angle Position Callback Toggle Identifier Rejected \n");
@@ -698,10 +716,10 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 }
 
 // these functions converts angles and steps, with respect to axis reductions and ppr
-long angleToSteps(float angle, int i)
+int angleToSteps(float angle, int i)
 {
 
-	return (long)((angle * red[i] * ppr[i]) / 360.0);
+	return (int)((angle * red[i] * ppr[i]) / 360.0);
 }
 int degPerSecToUsecPerStep(float angle, int i)
 {
@@ -1381,6 +1399,7 @@ int main(void)
 	k_timer_init(&home_timer, home_timer_callback, NULL);							// pass user data to callback
 	k_timer_init(&stepAll_timer, stepAll_timer_callback, NULL);						// pass user data to callback
 	k_timer_init(&pingAnglePosition_timer, pingAnglePosition_timer_callback, NULL); 
+	k_timer_init(&pingStepPosition_timer, pingStepPosition_timer_callback, NULL); 
 	k_timer_init(&pingSpeed_timer, pingSpeed_timer_callback, NULL); // pass user data to callback
 	
 	k_timer_start(&stepAll_timer, K_NO_WAIT, K_USEC(200)); // should be 5-10 times slower than the slowest stepper -- nevermind

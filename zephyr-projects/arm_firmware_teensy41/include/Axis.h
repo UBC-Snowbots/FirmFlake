@@ -17,7 +17,7 @@ struct Axis {
     int ENC_PIN_A;
     int ENC_PIN_B;
     //motor gear reduction and driver PPR (make sure to factor in microstep settings)
-    long PPR;
+    int PPR;
     float REDUCTION;
     bool pulse_state;
     bool moving;
@@ -49,14 +49,14 @@ struct Axis {
     int max_step_pos;
     int min_step_pos = 20 + POSITION_STEP_LIMIT_THRESHOLD;
 
-    long steps_remaining;
-    long step_pos = 0; // not from encoders
-    long step_des_pos;
+    volatile int steps_remaining;
+    volatile int step_pos = 0; // not from encoders
+    volatile int step_des_pos;
 
-    long decel_min_steps;
+    int decel_min_steps;
 
-    float des_angle_pos = 0.0;
-    float angle_pos = 0.0;
+    volatile float des_angle_pos = 0.0;
+    volatile float angle_pos = 0.0;
     //float max_angle_
     
     struct k_timer stepper_timer;

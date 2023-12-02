@@ -64,7 +64,7 @@ this is not easy
 #define NUM_PRESET_POSITIONS 1
 #define DEFAULT_POSITION 0
 
-#define POSITION_PING_MS_INTERVAL 50 // 50ms is 20 hz
+#define POSITION_PING_MS_INTERVAL 10 // 50ms is 20 hz // 10ms is 100hz
 
 #define SPEED_PING_MS_INTERVAL 150 // 50ms is 20 hz
 
@@ -188,7 +188,7 @@ void stepAll_timer_callback(struct k_timer *timer_id);
 void pingStepPosition_timer_callback(struct k_timer *timer_id);
 void pingAnglePosition_timer_callback(struct k_timer *timer_id);
 
-long angleToSteps(float angle, int i);
+int angleToSteps(float angle, int i);
 float stepsToAngle(int steps, int i);
 int degPerSecToUsecPerStep(float angle, int i);
 int degPerSecToMsecPerStep(float angle, int i);
