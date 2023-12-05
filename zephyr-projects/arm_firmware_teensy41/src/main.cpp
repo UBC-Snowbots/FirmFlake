@@ -1318,12 +1318,12 @@ int main(void)
 	// //initiate axes, im sure there is a better way to orginize all this data
 
 	// degPerSec converter functions use axes data, so need to be called after initiation//nvm
-	axes[0].max_speed = degPerSecToUsecPerStep(60.0, 0);  // 500;
+	axes[0].max_speed = degPerSecToUsecPerStep(80.0, 0);  // 500;
 	axes[1].max_speed = degPerSecToUsecPerStep(40.0, 1);	  // 800;
 	axes[2].max_speed = degPerSecToUsecPerStep(60.0, 2);  // 700;
-	axes[3].max_speed = degPerSecToUsecPerStep(70.0, 3); // 700;
-	axes[4].max_speed = degPerSecToUsecPerStep(60.0, 4);  // 600;
-	axes[5].max_speed = degPerSecToUsecPerStep(70.0, 5);  // 5800;
+	axes[3].max_speed = degPerSecToUsecPerStep(110.0, 3); // 700;
+	axes[4].max_speed = degPerSecToUsecPerStep(90.0, 4);  // 600;
+	axes[5].max_speed = degPerSecToUsecPerStep(90.0, 5);  // 5800;
 														  // can be cleaned up, but for now I'm leaving it like this
 	
 	axes[0].home_speed = degPerSecToUsecPerStep(20.0, 0);
@@ -1363,12 +1363,12 @@ int main(void)
 	axes[4].accel_slope = 2;
 	axes[5].accel_slope = 2;
 	
-	axes[0].decel_min_steps = angleToSteps(2.0, 0);
-	axes[1].decel_min_steps = angleToSteps(2.0, 1);
-	axes[2].decel_min_steps = angleToSteps(2.0, 2);
-	axes[3].decel_min_steps = angleToSteps(2.0, 3);
-	axes[4].decel_min_steps = angleToSteps(1.0, 4);
-	axes[5].decel_min_steps = angleToSteps(1.0, 5);
+	axes[0].decel_min_steps = angleToSteps(3.0, 0);
+	axes[1].decel_min_steps = angleToSteps(3.0, 1);
+	axes[2].decel_min_steps = angleToSteps(3.0, 2);
+	axes[3].decel_min_steps = angleToSteps(3.0, 3);
+	axes[4].decel_min_steps = angleToSteps(3.0, 4);
+	axes[5].decel_min_steps = angleToSteps(3.0, 5);
 
 	axes[0].max_step_pos = angleToSteps(180.0, 0) - POSITION_STEP_LIMIT_THRESHOLD;
 	axes[1].max_step_pos = angleToSteps(180.0, 1) - POSITION_STEP_LIMIT_THRESHOLD; //TODO: WARN DANGER 
