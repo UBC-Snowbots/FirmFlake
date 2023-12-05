@@ -1,0 +1,6 @@
+For accelleration
+make it based on a percentage of current speed, or target speed.
+should be current speed, this means it would accel faster at higher speeds...
+and accel slower at lower speeds, could be inverse 
+
+also, should maybe make a min stop speed?
