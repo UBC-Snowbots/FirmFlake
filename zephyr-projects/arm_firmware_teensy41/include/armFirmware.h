@@ -42,6 +42,8 @@ this is not easy
 // #define UART_DEV        DT_NODELABEL(lpuart4)
 #define MSG_SIZE 32
 
+#define DEBUG_MSGS true
+
 // general parameters
 #define NUM_AXES 6
 #define ON 0
@@ -58,13 +60,20 @@ this is not easy
 #define HOME 1
 #define ABSOLUTE_TARGET_POSITION 2
 #define INCREMENTAL_TARGET_POSITION 3
-#define TARGET_VELOCITY 4
+#define TARGET_VELOCITY 4 //sets the target velocity, but doesnt command arm, will only move if there are steps_remaining
 #define TEST_LIMITS 5
+#define ABSOLUTE_TARGET_VELOCITY 6 //sets target velocity, and commands arm to move at that velocity
+
+
+#define POSITION_CONTROL 1
+#define VELOCITY_CONTROL 2
+#define PRO_MODE false //removes accelleration limits. This is dangerous, but gives the operator full control over when the arm stops
+
 
 #define NUM_PRESET_POSITIONS 1
 #define DEFAULT_POSITION 0
 
-#define POSITION_PING_MS_INTERVAL 10 // 50ms is 20 hz // 10ms is 100hz
+#define POSITION_PING_MS_INTERVAL 10 // 50ms is 20 hz // 20ms is 50hz // 10ms is 100hz 
 
 #define SPEED_PING_MS_INTERVAL 150 // 50ms is 20 hz
 
@@ -147,6 +156,7 @@ const int pprEnc = 512;
 const float ENC_MULT[] = {5.12, 5.12, 5.12, 5.12, 5.12, 5.12};
 inline float ENC_STEPS_PER_DEG[NUM_AXES];
 
+inline int control_mode = VELOCITY_CONTROL;
 
 
 //this creates the device for gpio pins
@@ -178,6 +188,7 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE]);
 void parseIncrementalTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE]);
 void parseHomeCmd(uint8_t cmd[RX_BUF_SIZE]);
 void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE]);
+void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]);
 
 void testLimits();
 
@@ -200,6 +211,8 @@ void homeAllAxes();
 //inline bool homed[NUM_AXES] = {0};
 
 void goto_preset(int position);
+
+int pos_or_negative_float(float val);
 
 
 void set_gpio(int dev, int pin, int value);

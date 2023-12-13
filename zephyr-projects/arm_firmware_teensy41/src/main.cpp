@@ -324,6 +324,10 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 			cmd_type = TEST_LIMITS;
 			testLimits();
 			break;
+		case 'V':
+			//velocity command, arm should attempt these velocities
+			cmd_type = ABSOLUTE_TARGET_VELOCITY;
+			parseAbsoluteTargetVelocityCmd(cmd);
 		case 'w':
 			// debug cmd
 			// stepAxis(arpo);
@@ -612,7 +616,7 @@ void home_timer_callback(struct k_timer *timer_id)
 			// all axes homed, stop timer
 			k_timer_stop(&home_timer);
 			arm_inited = true;
-			//needs testing, not sure if specific home will work here
+			//needs testing, not sure if specific home will work here --> seems to be fine, NOV 2023
 			//goto_preset(DEFAULT_POSITION);
 			// k_sleep(K_MSEC(4000));
 			sendMsg("Homing complete, NOT returning to default position\n");
@@ -643,6 +647,88 @@ void goto_preset(int position)
 	// 	while(axes[i].steps_remaining > 0){
 	// 		//k_sleep(K_MSE);
 	// 	}
+	// }
+}
+
+void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]){
+		// example input: $P(11.0, 11.0, 11.0, 11.0, 11.0, 11.0)
+
+	char *start_ptr = (char *)cmd + 3; // Skip '$P('
+	char *end_ptr;
+	int i = 0;
+
+	while (i < NUM_AXES && (end_ptr = strchr(start_ptr, ',')) != NULL)
+	{
+		char angle_str[10]; // Assume that the float will not exceed 9 characters
+		strncpy(angle_str, start_ptr, end_ptr - start_ptr);
+		angle_str[end_ptr - start_ptr] = '\n';	 // Null-terminate
+		float des_speed_ = atof(angle_str);// will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
+		float magnitude_ = abs(des_speed_);
+		axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(des_speed_)*angleToSteps(5.0, i); 
+		
+		if(degPerSecToUsecPerStep(magnitude_, i) > axes[i].max_speed){
+		axes[i].target_speed = degPerSecToUsecPerStep(magnitude_, i);
+		}
+
+		start_ptr = end_ptr + 1; // Move to the character after the comma
+		i++;
+	}
+
+	// Last float (after the last comma and before the closing parenthesis)
+	if (i < NUM_AXES)
+	{
+		end_ptr = strchr(start_ptr, ')');
+		if (end_ptr)
+		{
+			char angle_str[10];
+			strncpy(angle_str, start_ptr, end_ptr - start_ptr);
+			angle_str[end_ptr - start_ptr] = '\n';
+			float des_speed_ = atof(angle_str);// will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
+			float magnitude_ = abs(des_speed_);
+			axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(des_speed_)*angleToSteps(5.0, i); 
+		
+			if(degPerSecToUsecPerStep(magnitude_, i) > axes[i].max_speed){
+				axes[i].target_speed = degPerSecToUsecPerStep(magnitude_, i);
+			}
+			i++;
+		}
+	}
+	if (i == NUM_AXES && !arm_homing)
+	{
+		// All axes angles are in axes[i].des_angle_pos
+		if(DEBUG_MSGS){
+		char msg[TX_BUF_SIZE];
+		sprintf(msg, "Absolute Target Velocity Command Accepted: \n");
+
+		ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
+		uart_irq_tx_enable(dev);
+		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
+		uart_irq_tx_enable(dev);
+		}
+	}
+	else
+	{
+
+		// Error handling: could not parse all 6 angles, or message is messed up.
+		if(DEBUG_MSGS){
+		char msg[TX_BUF_SIZE];
+		sprintf(msg, "Absolute Target Velocity Command Rejected, incorrect syntax or arm not homed: \n");
+
+		ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
+		uart_irq_tx_enable(dev);
+		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
+		uart_irq_tx_enable(dev);
+		// k_timer_start(&pingAnglePosition_timer, K_MSEC(50), K_NO_WAIT);
+		}
+		return;
+	}
+
+	// for (int i = 0; i < NUM_AXES; i++)
+	// {
+	// 	axes[i].step_des_pos = angleToSteps(axes[i].des_angle_pos, i);
+	// 	//WARN
+	// 	axes[i].target_speed = axes[i].max_speed;
+
 	// }
 }
 
@@ -682,6 +768,7 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 	if (i == NUM_AXES && !arm_homing)
 	{
 		// All axes angles are in axes[i].des_angle_pos
+		if(DEBUG_MSGS){
 		char msg[TX_BUF_SIZE];
 		sprintf(msg, "Absolute Target Position Command Accepted: \n");
 
@@ -689,11 +776,13 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		uart_irq_tx_enable(dev);
 		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
 		uart_irq_tx_enable(dev);
+		}
 	}
 	else
 	{
 
 		// Error handling: could not parse all 6 angles, or message is messed up.
+		if(DEBUG_MSGS){
 		char msg[TX_BUF_SIZE];
 		sprintf(msg, "Absolute Target Position Command Rejected, incorrect syntax or arm not homed: \n");
 
@@ -702,6 +791,7 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
 		uart_irq_tx_enable(dev);
 		// k_timer_start(&pingAnglePosition_timer, K_MSEC(50), K_NO_WAIT);
+		}
 
 		return;
 	}
@@ -742,6 +832,18 @@ float stepsToAngle(int steps, int i)
 
 	return (float)((steps * 360.0) / (ppr[i] * red[i]));
 }
+int pos_or_negative_float(float val){
+	if(val > 0){
+		return 1;
+	}
+	if(val < 0){
+		return -1;
+	}else{
+		return 0;
+	}
+	
+}
+
 
 void parseIncrementalTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 {
@@ -972,7 +1074,9 @@ void stepAxis(int axis)
 			//axes[axis].target_speed = axes[axis].max_start_speed;
 			}else{
 				//if its slower, move instantly
+				if(control_mode == POSITION_CONTROL){
 			axes[axis].current_speed = axes[axis].target_speed;
+				}
 				
 			}
 			axes[axis].last_dir = dir_signal;
@@ -1009,13 +1113,20 @@ void accelTimer_callback(struct k_timer *timer_id)
 	{
 		if (timer_id == &axes[i].accel_timer)
 		{
+			//TODO: implement velocity check if in vel mode
+			// if(axes[i].current_speed > axes[i].max_start_speed && control_mode == VELOCITY_CONTROL && axes[i].steps_remaining <= axes[i].decel_min_steps){
+			// 	axes[i].steps_remaining += axes[i].decel_min_steps;
+				
+			// }
+
 			if(axes[i].moving){
-			if(axes[i].steps_remaining <= axes[i].decel_min_steps && !axes[i].homing){
+			if(axes[i].steps_remaining <= axes[i].decel_min_steps && !axes[i].homing && control_mode == POSITION_CONTROL){
 				//maybe a static variable that will initiate a decceleration, overiding the accelleration.
 				//however this should be based on the current speed of the arm too
 			float deceleration_factor = static_cast<float>(axes[i].steps_remaining) / axes[i].decel_min_steps;
 			axes[i].target_speed = std::min(static_cast<int>(axes[i].current_speed / deceleration_factor), axes[i].max_start_speed);
 			}
+
 			
 			if (axes[i].target_speed < axes[i].max_speed)
 			{
@@ -1025,14 +1136,13 @@ void accelTimer_callback(struct k_timer *timer_id)
 			}
 			else
 			{ //TODO, make acceleration respective to target vs current speed
-				char tmpmsg[TX_BUF_SIZE];
 
 				if (axes[i].target_speed > axes[i].current_speed)
 				{
 					// arm needs to slow down
 					axes[i].current_speed = axes[i].current_speed + (axes[i].target_speed*axes[i].accel_slope/(axes[i].current_speed));
-		
-			
+					
+
 				}
 				else if (axes[i].target_speed < axes[i].current_speed)
 				{
