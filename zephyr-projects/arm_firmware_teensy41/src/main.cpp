@@ -604,10 +604,18 @@ void home_timer_callback(struct k_timer *timer_id)
 					axes[i].homed = true;
 					axes[i].homing = false;
 					// zero out
+					axes[i].step_pos = 0;
+
+					if(control_mode == POSITION_CONTROL){
 					axes[i].target_speed = axes[i].max_speed;
 					axes[i].current_speed = axes[i].max_start_speed;
-					axes[i].step_pos = 0;
 					axes[i].step_des_pos = axes[i].preset_step_pos[DEFAULT_POSITION];
+					}
+					if(control_mode == VELOCITY_CONTROL){
+						axes[i].target_velocity = 0;
+						axes[i].current_velocity = 0;
+						axes[i].step_des_pos = 0;
+					}
 					char msg[TX_BUF_SIZE];
 					sprintf(msg, "Axis %d is home. \n", i + 1);
 
@@ -993,10 +1001,6 @@ void parseHomeCmd(uint8_t homeCmd[RX_BUF_SIZE])
 				//TODO add specific diagnostics for each axis. I'm thinking an axis.switch_health instead of switch_health
 				switch_health = false;
 			}
-			else
-			{
-
-			}
 		}
 
 		if (switch_health)
@@ -1158,7 +1162,7 @@ void accelTimer_callback(struct k_timer *timer_id)
 				if(abs(axes[i].current_velocity) < ARM_DEG_RESOLUTION){ //arm to stop
 					axes[i].step_des_pos = axes[i].step_pos;
 				} else{
-					axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(axes[i].current_velocity)*axes[i].decel_min_steps*200;
+					axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(axes[i].current_velocity)*axes[i].decel_min_steps*2;
 					if(axes[i].step_des_pos < 0){
 						axes[i].step_des_pos = 0;
 					}
