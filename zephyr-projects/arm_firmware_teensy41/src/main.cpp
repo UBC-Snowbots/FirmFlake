@@ -251,7 +251,9 @@ void pingSpeed_timer_callback(struct k_timer *timer_id)
 {
 
 	char msg[TX_BUF_SIZE];
-	sprintf(msg, "$my_angleS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n\r\0", axes[0].current_speed, axes[0].target_speed, axes[1].current_speed, axes[1].target_speed, axes[2].current_speed, axes[2].target_speed, axes[3].current_speed, axes[3].target_speed, axes[4].current_speed, axes[4].target_speed, axes[5].current_speed, axes[5].target_speed);
+	sprintf(msg, "$my_stepS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n\r\0", axes[0].current_speed, axes[0].target_speed, axes[1].current_speed, axes[1].target_speed, axes[2].current_speed, axes[2].target_speed, axes[3].current_speed, axes[3].target_speed, axes[4].current_speed, axes[4].target_speed, axes[5].current_speed, axes[5].target_speed);
+	//sprintf(msg, "$my_angleS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n\r\0", usecPerStepToDegPerSec(axes[0].current_speed, 0), usecPerStepToDegPerSec(axes[0].target_speed, 0), usecPerStepToDegPerSec(axes[1].current_speed, 1), usecPerStepToDegPerSec(axes[1].target_speed, 1), usecPerStepToDegPerSec(axes[2].current_speed, 2), usecPerStepToDegPerSec(axes[2].target_speed, 2),  usecPerStepToDegPerSec(axes[3].current_speed, 3), usecPerStepToDegPerSec(axes[3].target_speed, 3), usecPerStepToDegPerSec(axes[4].current_speed, 4), usecPerStepToDegPerSec(axes[4].target_speed, 4), usecPerStepToDegPerSec(axes[5].current_speed, 5), usecPerStepToDegPerSec(axes[5].target_speed, 5));
+	
 	ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
 	uart_irq_tx_enable(dev);
 }
@@ -326,7 +328,7 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 			break;
 		case 'V':
 			//velocity command, arm should attempt these velocities
-			cmd_type = ABSOLUTE_TARGET_VELOCITY;
+			cmd_type = ABSOLUTE_TARGET_VELOCITY_ID;
 			parseAbsoluteTargetVelocityCmd(cmd);
 		case 'w':
 			// debug cmd
@@ -575,11 +577,23 @@ void home_timer_callback(struct k_timer *timer_id)
 				axes[i].target_speed = axes[i].home_speed;
 				if (axes[i].home_dir)
 				{
+					if(control_mode == VELOCITY_CONTROL){
+					axes[i].step_des_pos = axes[i].max_step_pos;
+
+					}else{
 					axes[i].step_des_pos = axes[i].step_pos + 20;
+
+					}
 				}
 				else
 				{
+					if(control_mode == VELOCITY_CONTROL){
+					axes[i].step_des_pos = axes[i].min_step_pos;
+
+					}else{
 					axes[i].step_des_pos = axes[i].step_pos - 20;
+
+					}
 				}
 			}
 			else
@@ -662,13 +676,14 @@ void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]){
 		char angle_str[10]; // Assume that the float will not exceed 9 characters
 		strncpy(angle_str, start_ptr, end_ptr - start_ptr);
 		angle_str[end_ptr - start_ptr] = '\n';	 // Null-terminate
-		float des_speed_ = atof(angle_str);// will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
-		float magnitude_ = abs(des_speed_);
-		axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(des_speed_)*angleToSteps(5.0, i); 
+		// float des_speed_ = atof(angle_str);// will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
+		// float magnitude_ = abs(des_speed_);
+		// axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(des_speed_)*angleToSteps(5.0, i); 
 		
-		if(degPerSecToUsecPerStep(magnitude_, i) > axes[i].max_speed){
-		axes[i].target_speed = degPerSecToUsecPerStep(magnitude_, i);
-		}
+		// if(degPerSecToUsecPerStep(magnitude_, i) > axes[i].max_speed){
+		// axes[i].target_speed = degPerSecToUsecPerStep(magnitude_, i);
+		// }
+			axes[i].target_velocity = atof(angle_str);
 
 		start_ptr = end_ptr + 1; // Move to the character after the comma
 		i++;
@@ -683,13 +698,14 @@ void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]){
 			char angle_str[10];
 			strncpy(angle_str, start_ptr, end_ptr - start_ptr);
 			angle_str[end_ptr - start_ptr] = '\n';
-			float des_speed_ = atof(angle_str);// will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
-			float magnitude_ = abs(des_speed_);
-			axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(des_speed_)*angleToSteps(5.0, i); 
+			axes[i].target_velocity = atof(angle_str);
+			// float des_speed_ = atof(angle_str);// will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
+			// float magnitude_ = abs(des_speed_);
+			// axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(des_speed_)*angleToSteps(5.0, i); 
 		
-			if(degPerSecToUsecPerStep(magnitude_, i) > axes[i].max_speed){
-				axes[i].target_speed = degPerSecToUsecPerStep(magnitude_, i);
-			}
+			// if(degPerSecToUsecPerStep(magnitude_, i) > axes[i].max_speed){
+			// 	axes[i].target_speed = degPerSecToUsecPerStep(magnitude_, i);
+			// }
 			i++;
 		}
 	}
@@ -719,6 +735,10 @@ void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]){
 		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
 		uart_irq_tx_enable(dev);
 		// k_timer_start(&pingAnglePosition_timer, K_MSEC(50), K_NO_WAIT);
+		}
+		for(int j =0; j<NUM_AXES; j++){
+			axes[j].target_speed = axes[j].current_speed;
+			axes[j].target_velocity = axes[j].current_velocity;
 		}
 		return;
 	}
@@ -813,20 +833,27 @@ int angleToSteps(float angle, int i)
 }
 int degPerSecToUsecPerStep(float angle, int i)
 {
-	if (abs(angle) < 0.60)
+	if (abs(angle) < ARM_DEG_RESOLUTION) //to sanitize wonky math, and to optimize very small values. mechanical resolution is less accurate than 0.01 degrees
 	{
-		angle = 0.60;
+		angle = ARM_DEG_RESOLUTION;
 	}
 	return (int)((1000000 * 360.0) / (ppr[i] * red[i] * abs(angle)));
 }
 int degPerSecToMsecPerStep(float angle, int i)
 {
-	if (abs(angle) < 0.60)
+	if (abs(angle) < ARM_DEG_RESOLUTION)
 	{
-		angle = 0.60;
+		angle = ARM_DEG_RESOLUTION;
 	}
 	return (int)((1000.0 * 360.0) / (ppr[i] * red[i] * abs(angle)));
 }
+float usecPerStepToDegPerSec(int steps, int i){ //should return current velocity of selected axis
+
+	return (float)(1/((ppr[i] * red[i] * steps * axes[i].dir)/(1000000.0 * 360.0)));
+
+}
+
+
 float stepsToAngle(int steps, int i)
 {
 
@@ -984,8 +1011,11 @@ void parseHomeCmd(uint8_t homeCmd[RX_BUF_SIZE])
 				for(int i = 0; i < NUM_AXES; i++){
 					if(i != requested_axis - 1){
 						axes[i].homed = 1;
+
 						//axes[i].homing
 					}else{
+					axes[i].target_velocity = axes[i].home_velocity * axes[i].home_dir_vel;
+
 						axes[i].homed = 0;
 					}
 				}
@@ -994,6 +1024,7 @@ void parseHomeCmd(uint8_t homeCmd[RX_BUF_SIZE])
 				for(int i = 0; i < NUM_AXES; i++){
 					axes[i].homed = 0;
 					axes[i].step_pos = axes[i].max_step_pos;
+					axes[i].target_velocity = axes[i].home_velocity * axes[i].home_dir_vel;
 				}
 
 			}
@@ -1079,6 +1110,7 @@ void stepAxis(int axis)
 				}
 				
 			}
+
 			axes[axis].last_dir = dir_signal;
 		}
 		if (axes[axis].step_des_pos > axes[axis].max_step_pos)
@@ -1089,6 +1121,10 @@ void stepAxis(int axis)
 		{
 			axes[axis].step_des_pos = axes[axis].min_step_pos;
 		}
+		//TODO figure out where tf to check this
+		// if(axes[axis].current_speed < axes[axis].max_start_speed){
+
+		// }
 	}
 
 	set_gpio(axes[axis].DIR_PIN[0], axes[axis].DIR_PIN[1], dir_signal);
@@ -1113,53 +1149,87 @@ void accelTimer_callback(struct k_timer *timer_id)
 	{
 		if (timer_id == &axes[i].accel_timer)
 		{
-			//TODO: implement velocity check if in vel mode
-			// if(axes[i].current_speed > axes[i].max_start_speed && control_mode == VELOCITY_CONTROL && axes[i].steps_remaining <= axes[i].decel_min_steps){
-			// 	axes[i].steps_remaining += axes[i].decel_min_steps;
-				
-			// }
+			if(control_mode == VELOCITY_CONTROL){
 
-			if(axes[i].moving){
-			if(axes[i].steps_remaining <= axes[i].decel_min_steps && !axes[i].homing && control_mode == POSITION_CONTROL){
-				//maybe a static variable that will initiate a decceleration, overiding the accelleration.
-				//however this should be based on the current speed of the arm too
-			float deceleration_factor = static_cast<float>(axes[i].steps_remaining) / axes[i].decel_min_steps;
-			axes[i].target_speed = std::min(static_cast<int>(axes[i].current_speed / deceleration_factor), axes[i].max_start_speed);
-			}
+				if(abs(axes[i].target_velocity) > axes[i].max_velocity){
+					axes[i].target_velocity = axes[i].max_velocity * pos_or_negative_float(axes[i].target_velocity);
+				}
+				
+				if(abs(axes[i].current_velocity) < ARM_DEG_RESOLUTION){ //arm to stop
+					axes[i].step_des_pos = axes[i].step_pos;
+				} else{
+					axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(axes[i].current_velocity)*axes[i].decel_min_steps*200;
+					if(axes[i].step_des_pos < 0){
+						axes[i].step_des_pos = 0;
+					}
+				}
+
+				//axes[i].target_speed = degPerSecToUsecPerStep(abs(axes[i].target_velocity), i);
+				if(axes[i].current_velocity < axes[i].target_velocity - ARM_DEG_VELOCITY_RESOLUTION){
+					axes[i].current_velocity += 0.01;
+				}else if(axes[i].current_velocity > axes[i].target_velocity + ARM_DEG_VELOCITY_RESOLUTION){
+					axes[i].current_velocity -= 0.01;
+				}else{
+					axes[i].current_velocity = axes[i].target_velocity;
+				}
+				
+
+
+
+
+
+
+
+				axes[i].current_speed = degPerSecToUsecPerStep(abs(axes[i].current_velocity), i);
+			}else{
+
+				
+
+				//TODO: implement velocity check if in vel mode
+
+				if(axes[i].moving){
+				if(axes[i].steps_remaining <= axes[i].decel_min_steps && !axes[i].homing && control_mode == POSITION_CONTROL){
+					//maybe a static variable that will initiate a decceleration, overiding the accelleration.
+					//however this should be based on the current speed of the arm too
+				float deceleration_factor = static_cast<float>(axes[i].steps_remaining) / axes[i].decel_min_steps;
+				axes[i].target_speed = std::min(static_cast<int>(axes[i].current_speed / deceleration_factor), axes[i].max_start_speed);
+				}
+
+				
+				if (axes[i].target_speed < axes[i].max_speed)
+				{
+					// arm target speed is past max speed
+					axes[i].target_speed = axes[i].max_speed;
+					sendMsg("Target Speed Past Maximum\n");
+				}
+				else
+				{ //TODO, make acceleration respective to target vs current speed
+
+					if (axes[i].target_speed > axes[i].current_speed)
+					{
+						// arm needs to slow down
+						axes[i].current_speed = axes[i].current_speed + (axes[i].target_speed*axes[i].accel_slope/(axes[i].current_speed));
+						
+
+					}
+					else if (axes[i].target_speed < axes[i].current_speed)
+					{
+						// arm needs to speed up
+						axes[i].current_speed = axes[i].current_speed - (axes[i].current_speed*axes[i].accel_slope/(axes[i].target_speed));
+						
 
 			
-			if (axes[i].target_speed < axes[i].max_speed)
-			{
-				// arm target speed is past max speed
-				axes[i].target_speed = axes[i].max_speed;
-				sendMsg("Target Speed Past Maximum\n");
-			}
-			else
-			{ //TODO, make acceleration respective to target vs current speed
+						
 
-				if (axes[i].target_speed > axes[i].current_speed)
-				{
-					// arm needs to slow down
-					axes[i].current_speed = axes[i].current_speed + (axes[i].target_speed*axes[i].accel_slope/(axes[i].current_speed));
-					
+					} // else{
+					// right on target
 
+					//}
 				}
-				else if (axes[i].target_speed < axes[i].current_speed)
-				{
-					// arm needs to speed up
-					axes[i].current_speed = axes[i].current_speed - (axes[i].current_speed*axes[i].accel_slope/(axes[i].target_speed));
-					
-
-		
-					
-
-				} // else{
-				  // right on target
-
-				//}
-			}
-			}else{
-				axes[i].current_speed = axes[i].max_start_speed;
+				}else{
+					axes[i].current_speed = axes[i].max_start_speed;
+				
+				}
 			}
 		}
 	}
@@ -1425,6 +1495,20 @@ int main(void)
 		//  sprintf(buffer, "Axis %d attached at STEP: %d, DIR: %d\n", i, axes[i].STEP_PIN, axes[i].DIR_PIN);
 		//   print_uart(buffer);
 	}
+		switch (control_mode)
+		{
+		case VELOCITY_CONTROL:
+			sendMsg("Arm is in VELOCITY mode");
+			break;
+		case POSITION_CONTROL:
+			sendMsg("Arm is in POSITION mode");
+			break;
+		default:
+			sendMsg("ERROR Control Mode not recognized, something is very wrong!!");
+			k_sleep(K_MSEC(5000));
+
+			break;
+		}
 	// //initiate axes, im sure there is a better way to orginize all this data
 
 	// degPerSec converter functions use axes data, so need to be called after initiation//nvm
@@ -1436,12 +1520,26 @@ int main(void)
 	axes[5].max_speed = degPerSecToUsecPerStep(90.0, 5);  // 5800;
 														  // can be cleaned up, but for now I'm leaving it like this
 	
+	axes[0].max_velocity = 80.0;  // 500;
+	axes[1].max_velocity = 40.0;	  // 800;
+	axes[2].max_velocity = 60.0;  // 700;
+	axes[3].max_velocity = 110.0; // 700;
+	axes[4].max_velocity = 90.0;  // 600;
+	axes[5].max_velocity = 90.0;  // 5800;
+	
 	axes[0].home_speed = degPerSecToUsecPerStep(20.0, 0);
 	axes[1].home_speed = degPerSecToUsecPerStep(14.0, 1);
 	axes[2].home_speed = degPerSecToUsecPerStep(20.0, 2);
 	axes[3].home_speed = degPerSecToUsecPerStep(20.0, 3);
 	axes[4].home_speed = degPerSecToUsecPerStep(20.0, 4);
 	axes[5].home_speed = degPerSecToUsecPerStep(25.0, 5);
+
+	axes[0].home_velocity = 15.0;
+	axes[1].home_velocity = 10.0;
+	axes[2].home_velocity = 15.0;
+	axes[3].home_velocity = 15.0;
+	axes[4].home_velocity = 15.0;
+	axes[5].home_velocity = 20.0;
 
 	axes[0].max_start_speed = degPerSecToUsecPerStep(3.0, 0);
 	axes[1].max_start_speed = degPerSecToUsecPerStep(3.0, 1);
@@ -1457,6 +1555,13 @@ int main(void)
 	axes[3].home_dir = 0;
 	axes[4].home_dir = 0;
 	axes[5].home_dir = 1;
+	
+	axes[0].home_dir_vel = 1;
+	axes[1].home_dir_vel = 1;
+	axes[2].home_dir_vel = 1;
+	axes[3].home_dir_vel = -1;
+	axes[4].home_dir_vel = -1;
+	axes[5].home_dir_vel = 1;
 
 	//accellerations
 	axes[0].current_accel = degPerSecToUsecPerStep(13.0, 0);
@@ -1491,6 +1596,8 @@ int main(void)
 	{
 		axes[i].dir = !axes[i].home_dir;
 		axes[i].target_speed = axes[i].home_speed;
+		axes[i].target_velocity = 00.00;
+		axes[i].current_velocity = 00.00;
 		axes[i].zero_speed = degPerSecToUsecPerStep(0.01, i);
 		axes[i].current_speed = axes[i].max_start_speed;
 		k_timer_init(&axes[i].stepper_timer, stepper_timer_callback, NULL); // pass user data to callback
@@ -1515,7 +1622,13 @@ int main(void)
 	k_timer_start(&stepAll_timer, K_NO_WAIT, K_USEC(200)); // should be 5-10 times slower than the slowest stepper -- nevermind
 	for (int i = 0; i < NUM_AXES; i++)
 	{
+		if(control_mode == POSITION_CONTROL){
 		k_timer_start(&axes[i].accel_timer, K_USEC(50), K_USEC(axes[i].current_accel));
+		}
+		if(control_mode == VELOCITY_CONTROL){
+		k_timer_start(&axes[i].accel_timer, K_MSEC(50), K_USEC(100));
+
+		}
 	}
 	// k_timer_start(&pingAnglePosition_timer, K_NO_WAIT, K_MSEC(25));
 

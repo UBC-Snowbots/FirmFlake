@@ -57,16 +57,19 @@ this is not easy
 #define RX_BUF_SIZE 128
 #define TX_BUF_SIZE 128
 
+#define ARM_DEG_RESOLUTION 0.01
+#define ARM_DEG_VELOCITY_RESOLUTION 0.05
+
 #define HOME 1
 #define ABSOLUTE_TARGET_POSITION 2
 #define INCREMENTAL_TARGET_POSITION 3
-#define TARGET_VELOCITY 4 //sets the target velocity, but doesnt command arm, will only move if there are steps_remaining
+#define TARGET_VELOCITY_ID 4 //sets the target velocity, but doesnt command arm, will only move if there are steps_remaining
 #define TEST_LIMITS 5
-#define ABSOLUTE_TARGET_VELOCITY 6 //sets target velocity, and commands arm to move at that velocity
+#define ABSOLUTE_TARGET_VELOCITY_ID 6 //sets target velocity, and commands arm to move at that velocity
 
 
-#define POSITION_CONTROL 1
-#define VELOCITY_CONTROL 2
+#define POSITION_CONTROL 1 
+#define VELOCITY_CONTROL 2 
 #define PRO_MODE false //removes accelleration limits. This is dangerous, but gives the operator full control over when the arm stops
 
 
@@ -203,6 +206,8 @@ int angleToSteps(float angle, int i);
 float stepsToAngle(int steps, int i);
 int degPerSecToUsecPerStep(float angle, int i);
 int degPerSecToMsecPerStep(float angle, int i);
+float usecPerStepToDegPerSec(int steps, int i);
+
 
 void updateAngles();
 

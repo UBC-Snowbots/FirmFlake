@@ -72,7 +72,7 @@ CMAKE_AR:FILEPATH=/home/rowan/zephyr-sdk-0.16.3/arm-zephyr-eabi/bin/arm-zephyr-e
 CMAKE_AS:FILEPATH=/home/rowan/zephyr-sdk-0.16.3/arm-zephyr-eabi/bin/arm-zephyr-eabi-as
 
 //ASM compiler
-CMAKE_ASM_COMPILER:FILEPATH=/home/rowan/zephyr-sdk-0.16.3/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc
+CMAKE_ASM_COMPILER:STRING=/home/rowan/zephyr-sdk-0.16.3/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc
 
 //A wrapper around 'ar' adding the appropriate '--plugin' option
 // for the GCC compiler
@@ -439,7 +439,7 @@ CMAKE_CACHE_MAJOR_VERSION:INTERNAL=3
 //Minor version of cmake used to create the current loaded cache
 CMAKE_CACHE_MINOR_VERSION:INTERNAL=28
 //Patch version of cmake used to create the current loaded cache
-CMAKE_CACHE_PATCH_VERSION:INTERNAL=0
+CMAKE_CACHE_PATCH_VERSION:INTERNAL=1
 //Path to CMake executable.
 CMAKE_COMMAND:INTERNAL=/usr/bin/cmake
 //Path to cpack program executable.

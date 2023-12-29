@@ -36,12 +36,18 @@ struct Axis {
     int accel_slope = 10; //should stay at 1 for maximum smoothness
     int current_accel = 20000;
 
+    float target_velocity;
+    float current_velocity;
+    float max_velocity;
+    float home_velocity;
+
     int macrostep;
 
     bool dir;
     bool last_dir = 0;
     //bool dir_signal;
     int home_dir;
+    int home_dir_vel;
     bool homing;
     bool homed = false;
     int preset_step_pos[1];
