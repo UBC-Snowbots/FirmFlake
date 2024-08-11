@@ -44,15 +44,6 @@ BYPRODUCT_KERNEL_HEX_NAME:FILEPATH=/home/rowan/FirmFlake/zephyr-projects/arm_fir
 //Selected board
 CACHED_BOARD:STRING=teensy41
 
-//If desired, you can build the application usingthe configuration
-// settings specified in an alternate .conf file using this parameter.
-// These settings will override the settings in the application’s
-// .config file or its default .conf file.Multiple files may be
-// listed, e.g. CONF_FILE="prj1.conf;prj2.conf" The CACHED_CONF_FILE
-// is internal Zephyr variable used between CMake runs. To change
-// CONF_FILE, use the CONF_FILE variable.
-CACHED_CONF_FILE:STRING=/home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41/prj.conf
-
 //Selected shield
 CACHED_SHIELD:STRING=
 
@@ -61,6 +52,9 @@ CACHED_SNIPPET:STRING=
 
 //Path to a program.
 CCACHE_FOUND:FILEPATH=/usr/bin/ccache
+
+//Path to a program.
+CCACHE_PROGRAM:FILEPATH=/usr/bin/ccache
 
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/home/rowan/zephyr-sdk-0.16.3/arm-zephyr-eabi/bin/arm-zephyr-eabi-addr2line
@@ -97,9 +91,8 @@ CMAKE_ASM_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 //Flags used by the ASM compiler during RELWITHDEBINFO builds.
 CMAKE_ASM_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
-//Choose the type of build, options are: None Debug Release RelWithDebInfo
-// MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=
+//No help, variable specified on the command line.
+CMAKE_BUILD_TYPE:STRING=Debug
 
 //CXX compiler
 CMAKE_CXX_COMPILER:STRING=/home/rowan/zephyr-sdk-0.16.3/arm-zephyr-eabi/bin/arm-zephyr-eabi-g++
@@ -127,8 +120,8 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 //Flags used by the CXX compiler during RELWITHDEBINFO builds.
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
-//C compiler
-CMAKE_C_COMPILER:STRING=/home/rowan/zephyr-sdk-0.16.3/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc
+//Path to a program.
+CMAKE_C_COMPILER:FILEPATH=/home/rowan/zephyr-sdk-0.16.3/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc
 
 //A wrapper around 'ar' adding the appropriate '--plugin' option
 // for the GCC compiler
@@ -232,16 +225,16 @@ CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 CMAKE_PROJECT_NAME:STATIC=arm_firmware
 
 //Value Computed by CMake
-CMAKE_PROJECT_VERSION:STATIC=3.5.99
+CMAKE_PROJECT_VERSION:STATIC=3.6.0
 
 //Value Computed by CMake
 CMAKE_PROJECT_VERSION_MAJOR:STATIC=3
 
 //Value Computed by CMake
-CMAKE_PROJECT_VERSION_MINOR:STATIC=5
+CMAKE_PROJECT_VERSION_MINOR:STATIC=6
 
 //Value Computed by CMake
-CMAKE_PROJECT_VERSION_PATCH:STATIC=99
+CMAKE_PROJECT_VERSION_PATCH:STATIC=0
 
 //Value Computed by CMake
 CMAKE_PROJECT_VERSION_TWEAK:STATIC=
@@ -310,6 +303,15 @@ CMAKE_TAPI:FILEPATH=CMAKE_TAPI-NOTFOUND
 // during the make.  This is useful for debugging only. With Visual
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
+
+//If desired, you can build the application usingthe configuration
+// settings specified in an alternate .conf file using this parameter.
+// These settings will override the settings in the application’s
+// .config file or its default .conf file.Multiple files may be
+// listed, e.g. CONF_FILE="prj1.conf;prj2.conf" The CACHED_CONF_FILE
+// is internal Zephyr variable used between CMake runs. To change
+// CONF_FILE, use the CONF_FILE variable.
+CONF_FILE:STRING=/home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41/prj.conf
 
 //Path to a program.
 DTC:FILEPATH=/home/rowan/zephyr-sdk-0.16.3/sysroots/x86_64-pokysdk-linux/usr/bin/dtc
@@ -437,9 +439,9 @@ CMAKE_CACHEFILE_DIR:INTERNAL=/home/rowan/FirmFlake/zephyr-projects/arm_firmware_
 //Major version of cmake used to create the current loaded cache
 CMAKE_CACHE_MAJOR_VERSION:INTERNAL=3
 //Minor version of cmake used to create the current loaded cache
-CMAKE_CACHE_MINOR_VERSION:INTERNAL=28
+CMAKE_CACHE_MINOR_VERSION:INTERNAL=30
 //Patch version of cmake used to create the current loaded cache
-CMAKE_CACHE_PATCH_VERSION:INTERNAL=1
+CMAKE_CACHE_PATCH_VERSION:INTERNAL=2
 //Path to CMake executable.
 CMAKE_COMMAND:INTERNAL=/usr/bin/cmake
 //Path to cpack program executable.
@@ -462,8 +464,6 @@ CMAKE_CXX_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
 CMAKE_CXX_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS_RELWITHDEBINFO
 CMAKE_CXX_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_COMPILER
-CMAKE_C_COMPILER-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_C_COMPILER_AR
 CMAKE_C_COMPILER_AR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_C_COMPILER_RANLIB
@@ -520,7 +520,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=127
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=135
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -532,7 +532,7 @@ CMAKE_RANLIB-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_READELF
 CMAKE_READELF-ADVANCED:INTERNAL=1
 //Path to CMake installation.
-CMAKE_ROOT:INTERNAL=/usr/share/cmake-3.28
+CMAKE_ROOT:INTERNAL=/usr/share/cmake-3.30
 //ADVANCED property for variable: CMAKE_SHARED_LINKER_FLAGS
 CMAKE_SHARED_LINKER_FLAGS-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_SHARED_LINKER_FLAGS_DEBUG

@@ -66,6 +66,7 @@ this is not easy
 #define TARGET_VELOCITY_ID 4 //sets the target velocity, but doesnt command arm, will only move if there are steps_remaining
 #define TEST_LIMITS 5
 #define ABSOLUTE_TARGET_VELOCITY_ID 6 //sets target velocity, and commands arm to move at that velocity
+#define HELP_CMDTYPE 7
 
 
 #define POSITION_CONTROL 1 
@@ -86,6 +87,7 @@ this is not easy
 //comm characters
 #define HOME_CHAR 'h'
 #define ANGLE_CALLBACK_CHAR 'A'
+#define HELP_CHAR '?'
 
 #define ACCEL_CURVE 1
 
@@ -118,7 +120,9 @@ inline int limGPIO_PIN[6][6] = {{1,17}, {1,16}, {1,26}, {1,27}, {1,25}, {1,24}};
 inline int ppr[6] = {400, 400, 400, 400, 400, 400};
 
 // Gear Reductions
-inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 5.18};
+// inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 5.18}; 
+inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 20.00}; //? Double check with arm
+
 
 //from old driver
 // // Motor pins      
@@ -190,6 +194,7 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE]);
 void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE]);
 void parseIncrementalTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE]);
 void parseHomeCmd(uint8_t cmd[RX_BUF_SIZE]);
+void parseHelpCmd(uint8_t cmd[RX_BUF_SIZE]);
 void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE]);
 void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]);
 

@@ -107,9 +107,12 @@ config ZEPHYR_SILABS_MODULE
 	bool
 	default y
 endmenu
-config ZEPHYR_ST_MODULE
-   bool
-   default y
+menu "hal_st (/home/rowan/zephyrproject/modules/hal/st)"
+osource "$(ZEPHYR_HAL_ST_KCONFIG)"
+config ZEPHYR_HAL_ST_MODULE
+	bool
+	default y
+endmenu
 config ZEPHYR_STM32_MODULE
    bool
    default y

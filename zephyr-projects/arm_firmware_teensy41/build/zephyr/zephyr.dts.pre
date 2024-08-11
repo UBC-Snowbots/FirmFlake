@@ -79,6 +79,8 @@
 # 13 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
 # 1 "/home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/pwm/pwm.h" 1 3 4
 # 14 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
+# 1 "/home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/memory-controller/nxp,flexram.h" 1 3 4
+# 15 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
 
 / {
  chosen {
@@ -102,7 +104,6 @@
    mpu: mpu@e000ed90 {
     compatible = "arm,armv7m-mpu";
     reg = <0xe000ed90 0x40>;
-    arm,num-mpu-regions = <16>;
    };
 
    itm: itm@e0000000 {
@@ -155,12 +156,16 @@
 
  soc {
   flexram: flexram@400b0000 {
-   compatible = "nxp,imx-flexram";
+   compatible = "nxp,flexram";
    reg = <0x400b0000 0x4000>;
    interrupts = <38 0>;
 
    #address-cells = <1>;
    #size-cells = <1>;
+
+   status = "okay";
+
+   flexram,bank-size = <32>;
 
    itcm: itcm@0 {
     compatible = "zephyr,memory-region", "nxp,imx-itcm";
@@ -190,6 +195,7 @@
    ahb-bufferable;
    ahb-cacheable;
    status = "disabled";
+   clocks = <&ccm 0x0F00UL 0x0 0x0>;
   };
 
   flexspi2: spi@402a4000 {
@@ -201,6 +207,7 @@
    ahb-bufferable;
    ahb-cacheable;
    status = "disabled";
+   clocks = <&ccm 0x0F01UL 0x0 0x0>;
   };
 
   semc: semc0@402f0000 {
@@ -858,24 +865,22 @@
   };
 
   usb1: usbd@402e0000 {
-   compatible = "nxp,mcux-usbd";
+   compatible = "nxp,ehci";
    reg = <0x402E0000 0x200>;
    interrupts = <113 1>;
    interrupt-names = "usb_otg";
    clocks = <&usbclk>;
    num-bidir-endpoints = <8>;
-   usb-controller-index = "Ehci0";
    status = "disabled";
   };
 
   usb2: usbd@402e0200 {
-   compatible = "nxp,mcux-usbd";
+   compatible = "nxp,ehci";
    reg = <0x402E0200 0x200>;
    interrupts = <112 1>;
    interrupt-names = "usb_otg";
    clocks = <&usbclk>;
    num-bidir-endpoints = <8>;
-   usb-controller-index = "Ehci1";
    status = "disabled";
   };
 
@@ -1167,14 +1172,33 @@
 };
 # 8 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt1060.dtsi" 2 3 4
 
+&flexram {
 
+ /delete-node/ ocram@20200000;
+ ocram: ocram@20280000 {
+  compatible = "zephyr,memory-region", "mmio-sram";
+  reg = <0x20280000 ((256) * 1024)>;
+  zephyr,memory-region = "OCRAM";
+ };
 
+ flexram,num-ram-banks = <16>;
 
-
-
-
-&ocram {
- reg = <0x20200000 ((768) * 1024)>;
+ flexram,bank-spec = <1>,
+        <1>,
+        <1>,
+        <1>,
+        <2>,
+        <2>,
+        <3>,
+        <3>,
+        <3>,
+        <3>,
+        <2>,
+        <2>,
+        <1>,
+        <1>,
+        <1>,
+        <1>;
 };
 
 &ccm {
@@ -1187,9 +1211,9 @@
  };
 };
 
-
 / {
  soc {
+
   enet2: ethernet@402d4000 {
    compatible = "nxp,kinetis-ethernet";
    reg = <0x402D4000 0x628>;
@@ -1202,6 +1226,13 @@
     interrupts = <153 0>;
     interrupt-names = "IEEE1588_TMR";
    };
+  };
+
+
+  ocram2: ocram@20200000 {
+   compatible = "zephyr,memory-region", "mmio-sram";
+   reg = <0x20200000 ((512) * 1024)>;
+   zephyr,memory-region = "OCRAM2";
   };
  };
 };

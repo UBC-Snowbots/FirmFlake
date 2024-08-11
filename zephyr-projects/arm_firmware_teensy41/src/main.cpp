@@ -45,7 +45,7 @@ struct k_timer stepAll_timer;
 
 // struct k_msgq axes_msgqs[NUM_AXES];
 
-bool homing_complete = false;
+bool homing_complete = true;
 
 //msg ques if we need to use them
 // K_MSGQ_DEFINE(axes_data_queue[0], sizeof(struct AxisData), 2, 4);
@@ -292,6 +292,7 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 
 	// sendMsg("Command Parsing \n");
 
+
 	if (cmd[0] == '$' && cmd[strlen((char *)cmd) - 1] == ')')
 	{
 		// Parse the command
@@ -306,6 +307,10 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 			cmd_type = HOME; // example command buffer:   $h()
 			parseHomeCmd(cmd);
 			break;
+		case HELP_CHAR:
+			cmd_type = HELP_CMDTYPE;
+			parseHelpCmd(cmd);
+			break;
 		case 'P':
 			cmd_type = ABSOLUTE_TARGET_POSITION;
 			parseAbsoluteTargetPositionCmd(cmd); // example command buffer:   $P(0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f)
@@ -319,12 +324,12 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 			parseSettingCmd(cmd); // example command buffer:   $p(0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f)
 			break;
 		case 't':
-			cmd_type = TEST_LIMITS;
+			cmd_type = TEST_LIMITS; 
 			testLimits();
 			break;
-		case ANGLE_CALLBACK_CHAR:
+		case ANGLE_CALLBACK_CHAR: //TODO fix this shit. Not for testing limits.
 			cmd_type = TEST_LIMITS;
-			testLimits();
+			// testLimits();
 			break;
 		case 'V':
 			//velocity command, arm should attempt these velocities
@@ -356,6 +361,23 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 		// sendMsg(cmdrelay);
 	}
 }
+
+void parseHelpCmd(uint8_t cmd[RX_BUF_SIZE])
+{
+	sendMsg("\nHelp Message Triggered\n");
+//		k_sleep(K_MSEC(50));
+	sendMsg("\n**\n");
+	sendMsg("Home All Axes: $h(A)\n");
+	sendMsg("Home Axis x : $h(x)\n");
+	sendMsg("Test Limit Switches  : $t()\n");
+	sendMsg("Position Angle feedback ON  : $SCP(1)\n");
+	sendMsg("Position Angle feedback OFF  : $SCP(0)\n");
+	sendMsg("\n**\n");
+	sendMsg("Help Mesage Complete\n");
+
+
+}
+
 void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 {
 	// k_timer_stop(&pingAnglePosition_timer);
@@ -1535,15 +1557,15 @@ int main(void)
 	axes[1].home_speed = degPerSecToUsecPerStep(14.0, 1);
 	axes[2].home_speed = degPerSecToUsecPerStep(20.0, 2);
 	axes[3].home_speed = degPerSecToUsecPerStep(20.0, 3);
-	axes[4].home_speed = degPerSecToUsecPerStep(20.0, 4);
+	axes[4].home_speed = degPerSecToUsecPerStep(40.0, 4);
 	axes[5].home_speed = degPerSecToUsecPerStep(25.0, 5);
 
 	axes[0].home_velocity = 15.0;
 	axes[1].home_velocity = 10.0;
 	axes[2].home_velocity = 15.0;
 	axes[3].home_velocity = 15.0;
-	axes[4].home_velocity = 15.0;
-	axes[5].home_velocity = 20.0;
+	axes[4].home_velocity = 10.0;
+	axes[5].home_velocity = 50.0;
 
 	axes[0].max_start_speed = degPerSecToUsecPerStep(3.0, 0);
 	axes[1].max_start_speed = degPerSecToUsecPerStep(3.0, 1);
@@ -1553,6 +1575,7 @@ int main(void)
 	axes[5].max_start_speed = degPerSecToUsecPerStep(3.0, 5);
 
 	// 1 or 0 for dir setting
+	//CHange both? what the fuck is this codE? - Rowan july 5th
 	axes[0].home_dir = 1;
 	axes[1].home_dir = 1;
 	axes[2].home_dir = 1;

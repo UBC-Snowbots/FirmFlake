@@ -20,7 +20,7 @@
 "hal_renesas":"/home/rowan/zephyrproject/modules/hal/renesas":"/home/rowan/zephyrproject/modules/hal/renesas"
 "hal_rpi_pico":"/home/rowan/zephyrproject/modules/hal/rpi_pico":"${ZEPHYR_HAL_RPI_PICO_CMAKE_DIR}"
 "silabs":"/home/rowan/zephyrproject/modules/hal/silabs":"/home/rowan/zephyrproject/modules/hal/silabs"
-"st":"/home/rowan/zephyrproject/modules/hal/st":"/home/rowan/zephyrproject/modules/hal/st"
+"hal_st":"/home/rowan/zephyrproject/modules/hal/st":"/home/rowan/zephyrproject/modules/hal/st"
 "stm32":"/home/rowan/zephyrproject/modules/hal/stm32":"/home/rowan/zephyrproject/modules/hal/stm32"
 "hal_telink":"/home/rowan/zephyrproject/modules/hal/telink":"/home/rowan/zephyrproject/modules/hal/telink"
 "ti":"/home/rowan/zephyrproject/modules/hal/ti":"/home/rowan/zephyrproject/modules/hal/ti"

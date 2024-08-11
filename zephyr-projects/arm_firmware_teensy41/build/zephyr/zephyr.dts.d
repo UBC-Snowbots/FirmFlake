@@ -11,6 +11,7 @@ empty_file.o: /home/rowan/zephyrproject/zephyr/misc/empty_file.c \
  /home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/gpio/gpio.h \
  /home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/i2c/i2c.h \
  /home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/pwm/pwm.h \
+ /home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/memory-controller/nxp,flexram.h \
  /home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy4-pinctrl.dtsi \
  /home/rowan/zephyrproject/modules/hal/nxp/dts/nxp/nxp_imx/rt/mimxrt1062dvl6a-pinctrl.dtsi \
  /home/rowan/zephyrproject/zephyr/dts/common/freq.h \
