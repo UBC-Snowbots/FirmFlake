@@ -307,10 +307,10 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 			cmd_type = HOME; // example command buffer:   $h()
 			parseHomeCmd(cmd);
 			break;
-		case HELP_CHAR:
-			cmd_type = HELP_CMDTYPE;
-			parseHelpCmd(cmd);
-			break;
+		// case HELP_CHAR:
+		// 	cmd_type = HELP_CMDTYPE;
+		// 	parseHelpCmd(cmd);
+		// 	break;
 		case 'P':
 			cmd_type = ABSOLUTE_TARGET_POSITION;
 			parseAbsoluteTargetPositionCmd(cmd); // example command buffer:   $P(0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f)
@@ -1558,7 +1558,7 @@ int main(void)
 	axes[2].home_speed = degPerSecToUsecPerStep(20.0, 2);
 	axes[3].home_speed = degPerSecToUsecPerStep(20.0, 3);
 	axes[4].home_speed = degPerSecToUsecPerStep(40.0, 4);
-	axes[5].home_speed = degPerSecToUsecPerStep(25.0, 5);
+	axes[5].home_speed = degPerSecToUsecPerStep(20.0, 5);
 
 	axes[0].home_velocity = 15.0;
 	axes[1].home_velocity = 10.0;
@@ -1580,7 +1580,7 @@ int main(void)
 	axes[1].home_dir = 1;
 	axes[2].home_dir = 1;
 	axes[3].home_dir = 0;
-	axes[4].home_dir = 0;
+	axes[4].home_dir = 1; //CHANGED FROM 0 to 1
 	axes[5].home_dir = 1;
 	
 	axes[0].home_dir_vel = 1;
@@ -1596,7 +1596,7 @@ int main(void)
 	axes[2].current_accel = degPerSecToUsecPerStep(10.0, 2);
 	axes[3].current_accel = degPerSecToUsecPerStep(15.0, 3);
 	axes[4].current_accel = degPerSecToUsecPerStep(15.0, 4);
-	axes[5].current_accel = degPerSecToUsecPerStep(10.0, 5);
+	axes[5].current_accel = degPerSecToUsecPerStep(1.0, 5);
 
 	axes[0].accel_slope = 2;
 	axes[1].accel_slope = 1;
@@ -1617,7 +1617,7 @@ int main(void)
 	axes[2].max_step_pos = angleToSteps(140.0, 2) - POSITION_STEP_LIMIT_THRESHOLD;
 	axes[3].max_step_pos = angleToSteps(180.0, 3) - POSITION_STEP_LIMIT_THRESHOLD;
 	axes[4].max_step_pos = angleToSteps(180.0, 4) - POSITION_STEP_LIMIT_THRESHOLD;
-	axes[5].max_step_pos = angleToSteps(100.0, 5) - POSITION_STEP_LIMIT_THRESHOLD;
+	axes[5].max_step_pos = angleToSteps(99999.0, 5) - POSITION_STEP_LIMIT_THRESHOLD;
 
 	for (int i = 0; i < NUM_AXES; i++)
 	{

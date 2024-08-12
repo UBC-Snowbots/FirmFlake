@@ -121,7 +121,8 @@ inline int ppr[6] = {400, 400, 400, 400, 400, 400};
 
 // Gear Reductions
 // inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 5.18}; 
-inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 20.00}; //? Double check with arm
+inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 150.00}; //? Double check with arm 
+// inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 20.00}; //? Double check with arm -> August 11th
 
 
 //from old driver
