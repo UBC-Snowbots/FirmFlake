@@ -565,7 +565,7 @@ void comm_timer_callback(struct k_timer *timer_id)
 	for (int i = 0; i < NUM_AXES; i++)
 	{
 		char tmpmsg[TX_BUF_SIZE];
-
+		//!Do not change the output of the following line - used in higher level ros stuff to check for limits.
 		sprintf(tmpmsg, "Limit Switch %d, is %d.  \n\r\0", i + 1, get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]));
 
 
@@ -1199,12 +1199,6 @@ void accelTimer_callback(struct k_timer *timer_id)
 					axes[i].current_velocity = axes[i].target_velocity;
 				}
 				
-
-
-
-
-
-
 
 				axes[i].current_speed = degPerSecToUsecPerStep(abs(axes[i].current_velocity), i);
 			}else{
