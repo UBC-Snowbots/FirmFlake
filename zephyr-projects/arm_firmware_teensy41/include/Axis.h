@@ -1,5 +1,5 @@
 #pragma once
-#include <armFirmware.h>
+#include <armFirmware.hpp>
 // #define INIT_AXIS(i) Axis(stepPins[i], dirPins[i], encPinA[i], encPinB[i], ppr[i], red[i])
 
 //if an axis is within this many steps to its max/min
@@ -67,22 +67,22 @@ struct Axis {
     
     struct k_timer stepper_timer;
     struct k_timer accel_timer;
-    struct gpio_callback limit_switch_cb_data;
+    //struct gpio_callback limit_switch_cb_data;
 
 //   // Code to configure pins
-//   const struct device *stepdev;
-//   const struct device *dirdev;
-//   const struct device *limdev;
+    struct gpio_dt_spec step_spec;
+    struct gpio_dt_spec dir_spec;
+    struct gpio_dt_spec lim_spec;
 //   static struct gpio_callback limit_switch_cb_data;
 
-
-    void attach();
+    // void attach();
     void readEncoder();
     void updateAngles();
 
     //void step(int steps);
-    void home();
+    void home();    
 
- 
-    
+    void set_gpio_dir(bool value);
+    void set_gpio_step(bool value);
+    int get_gpio_lim();
 };

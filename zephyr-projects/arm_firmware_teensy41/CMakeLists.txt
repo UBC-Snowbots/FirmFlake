@@ -3,12 +3,15 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 #arm_firmware v2
 project(arm_firmware)
 
-
 target_include_directories(app PRIVATE 
     include
     src
 )
 
 #telling it what targets to aim for
+
+# FILE(GLOB app_sources src/main.cpp src/Axis.cpp)
+# FILE(GLOB app_sources src/main2.cpp)
 FILE(GLOB app_sources src/*.cpp)
-target_sources(app PRIVATE ${app_sources})
+
+target_sources(app PRIVATE ${app_sources}) 

@@ -24,6 +24,21 @@ Add in
 
 
 #include <armFirmware.h>
+#include <Axis.h>
+
+/* change this to any other UART peripheral if desired */
+#define UART_DEVICE_NODE DT_CHOSEN(zephyr_shell_uart)
+
+#define MSG_SIZE 32
+
+/* queue to store up to 10 messages (aligned to 4-byte boundary) */
+K_MSGQ_DEFINE(uart_msgq, MSG_SIZE, 10, 4);
+
+// static const struct device *const dev = DEVICE_DT_GET(UART_DEVICE_NODE);
+
+/* receive buffer used in UART ISR callback */
+static char rx_buf[MSG_SIZE];
+static int rx_buf_pos = 10;
 
 LOG_MODULE_REGISTER(cdc_acm_echo, LOG_LEVEL_INF);
 
@@ -31,6 +46,7 @@ LOG_MODULE_REGISTER(cdc_acm_echo, LOG_LEVEL_INF);
 uint8_t ring_buffer[RING_BUF_SIZE];
 
 Axis axes[NUM_AXES];
+
 // struct k_timer Axis::stepper_timer; -- still want to figure out exactly why this broke / fixed my code
 
 // planning to switch this to a thread
@@ -54,86 +70,6 @@ bool homing_complete = true;
 // K_MSGQ_DEFINE(axes_data_queue[3], sizeof(struct AxisData), 2, 4);
 // K_MSGQ_DEFINE(axes_data_queue[4], sizeof(struct AxisData), 2, 4);
 // K_MSGQ_DEFINE(axes_data_queue[5], sizeof(struct AxisData), 2, 4);
-
-#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
-USBD_CONFIGURATION_DEFINE(config_1,
-						  USB_SCD_SELF_POWERED,
-						  200);
-
-USBD_DESC_LANG_DEFINE(sample_lang);
-USBD_DESC_MANUFACTURER_DEFINE(sample_mfr, "UBC ROVER");
-USBD_DESC_PRODUCT_DEFINE(sample_product, "ARM MCU");
-USBD_DESC_SERIAL_NUMBER_DEFINE(sample_sn, "0123456789ABCDEF");
-
-USBD_DEVICE_DEFINE(sample_usbd,
-				   DEVICE_DT_GET(DT_NODELABEL(zephyr_udc0)),
-				   0x2fe3, 0x0001);
-
-static int enable_usb_device_next(void)
-{
-	int err;
-
-	err = usbd_add_descriptor(&sample_usbd, &sample_lang);
-	if (err)
-	{
-		LOG_ERR("Failed to initialize language descriptor (%d)", err);
-		return err;
-	}
-
-	err = usbd_add_descriptor(&sample_usbd, &sample_mfr);
-	if (err)
-	{
-		LOG_ERR("Failed to initialize manufacturer descriptor (%d)", err);
-		return err;
-	}
-
-	err = usbd_add_descriptor(&sample_usbd, &sample_product);
-	if (err)
-	{
-		LOG_ERR("Failed to initialize product descriptor (%d)", err);
-		return err;
-	}
-
-	err = usbd_add_descriptor(&sample_usbd, &sample_sn);
-	if (err)
-	{
-		LOG_ERR("Failed to initialize SN descriptor (%d)", err);
-		return err;
-	}
-
-	err = usbd_add_configuration(&sample_usbd, &config_1);
-	if (err)
-	{
-		LOG_ERR("Failed to add configuration (%d)", err);
-		return err;
-	}
-
-	err = usbd_register_class(&sample_usbd, "cdc_acm_0", 1);
-	if (err)
-	{
-		LOG_ERR("Failed to register CDC ACM class (%d)", err);
-		return err;
-	}
-
-	err = usbd_init(&sample_usbd);
-	if (err)
-	{
-		LOG_ERR("Failed to initialize device support");
-		return err;
-	}
-
-	err = usbd_enable(&sample_usbd);
-	if (err)
-	{
-		LOG_ERR("Failed to enable device support");
-		return err;
-	}
-
-	LOG_DBG("USB device support enabled");
-
-	return 0;
-}
-#endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK_NEXT) */
 
 static void interrupt_handler(const struct device *dev, void *user_data)
 {
@@ -200,31 +136,12 @@ static void interrupt_handler(const struct device *dev, void *user_data)
 		}
 	}
 }
-// Planning to sepperate steppers and uart into 2 different threads
-// void uart_thread(void *arg1, void *arg2, void *arg3) {
-//     // UART initialization code here
-
-//     while (true) {
-//         // Handle UART reception, parsing commands, etc.
-
-//         // If a message related to an axis is received, enqueue it to the message queue
-//         struct AxisData axis_data;
-//         // Populate axis_data with the relevant information
-//         k_msgq_put(&axis_data_queue, &axis_data, K_FOREVER);
-
-//         // Handle UART transmission, sending responses, etc.
-//     }
-// }
 
 void sendMsg(const char tx_msg[TX_BUF_SIZE])
 {
 
 	ring_buf_put(&ringbuf, (uint8_t *)tx_msg, strlen(tx_msg));
 	uart_irq_tx_enable(dev);
-}
-
-void tx_enable_callback(struct k_timer *timer_id)
-{
 }
 
 void pingStepPosition_timer_callback(struct k_timer *timer_id)
@@ -247,6 +164,7 @@ void pingAnglePosition_timer_callback(struct k_timer *timer_id)
 	ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
 	uart_irq_tx_enable(dev);
 }
+
 void pingSpeed_timer_callback(struct k_timer *timer_id)
 {
 
@@ -267,31 +185,14 @@ void updateAngles()
 		}
 }
 
-// P(120.00, 20.00, 10.00, 90.0, 70.30, 70.51)
-
-// void limit_switch_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-//     	     char stat[TX_BUF_SIZE];
-//            sprintf(stat, "Limit Switch for an axis trigged \n\r\0");
-//             sendMsg(stat);
-// 			k_sleep(K_MSEC(1000));
-// 	for (int i = 0; i < NUM_AXES; i++) {
-//      int value = get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]);
-//         if (value > 0) { // assuming active high
-//             char msg[TX_BUF_SIZE];
-//            sprintf(msg, "Limit Switch for Axis %d, activated \n\r\0", axes[i].index);
-//             sendMsg(msg);
-//             // You can also add any additional handling for this specific axis here
-//         }
-//     }
-
-// }
-
 void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 {
-	// k_timer_start(&pingAnglePosition_timer, K_NO_WAIT, K_MSEC(50));
 
-	// sendMsg("Command Parsing \n");
-
+    for (size_t i = 0; i < RX_BUF_SIZE; i++) {
+        printf("%c", cmd[i]); // Print each byte in hex format
+    }
+	printf("done");
+    printf("\n");
 
 	if (cmd[0] == '$' && cmd[strlen((char *)cmd) - 1] == ')')
 	{
@@ -566,7 +467,8 @@ void comm_timer_callback(struct k_timer *timer_id)
 	{
 		char tmpmsg[TX_BUF_SIZE];
 
-		sprintf(tmpmsg, "Limit Switch %d, is %d.  \n\r\0", i + 1, get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]));
+		// sprintf(tmpmsg, "Limit Switch %d, is %d.  \n\r\0", i + 1, get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]));
+		sprintf(tmpmsg, "Limit Switch %d, is %d.  \n\r\0", i + 1, axes[i].get_gpio_lim());
 
 
 		sendMsg(tmpmsg);
@@ -593,7 +495,8 @@ void home_timer_callback(struct k_timer *timer_id)
 		arm_homing = true;
 		for (int i = 0; i < NUM_AXES; i++)
 		{
-			if (!get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]) && axes[i].homed == false)
+			// if (!get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]) && axes[i].homed == false)
+			if (!axes[i].get_gpio_lim() && axes[i].homed == false)
 			{
 				axes[i].homing = true;
 				axes[i].target_speed = axes[i].home_speed;
@@ -1018,7 +921,8 @@ void parseHomeCmd(uint8_t homeCmd[RX_BUF_SIZE])
 
 		for (int i = 0; i < NUM_AXES; i++)
 		{
-			if (get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]))
+			// if (get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]))
+			if (axes[i].get_gpio_lim()) 
 			{
 				//TODO add specific diagnostics for each axis. I'm thinking an axis.switch_health instead of switch_health
 				switch_health = false;
@@ -1153,7 +1057,8 @@ void stepAxis(int axis)
 		// }
 	}
 
-	set_gpio(axes[axis].DIR_PIN[0], axes[axis].DIR_PIN[1], dir_signal);
+	// set_gpio(axes[axis].DIR_PIN[0], axes[axis].DIR_PIN[1], dir_signal);
+	axes[axis].set_gpio_dir(dir_signal);
 
 	axes[axis].steps_remaining = abs(axes[axis].step_des_pos - axes[axis].step_pos);
 
@@ -1260,94 +1165,6 @@ void accelTimer_callback(struct k_timer *timer_id)
 		}
 	}
 }
-//using pointers
-// void accelTimer_callback(struct k_timer *timer_id)
-// {
-//     // Use a pointer to iterate over axes
-//     for (Axis *axis = axes; axis < axes + NUM_AXES; axis++)
-//     {
-//         if (timer_id == &(axis->accel_timer))
-//         {
-//             if (axis->target_speed < axis->max_speed)
-//             {
-//                 axis->target_speed = axis->max_speed;
-//                 sendMsg("Target Speed Past Maximum\n");
-//             }
-//             else
-//             {
-//                 char tmpmsg[TX_BUF_SIZE];
-
-//                 if (axis->target_speed > axis->current_speed)
-//                 {
-//                     // Arm needs to slow down
-//                     axis->current_speed += axis->accel_slope;
-//                  //   sprintf(tmpmsg, "Slowing axis %d, speed is %d.  \n", (int)(axis - axes) + 1, axis->current_speed);
-//                 }
-//                 else if (axis->target_speed < axis->current_speed)
-//                 {
-//                     // Arm needs to speed up
-//                     axis->current_speed -= axis->accel_slope;
-//                   //  sprintf(tmpmsg, "Speeding axis %d, speed is %d.  \n", (int)(axis - axes) + 1, axis->current_speed);
-//                 }
-//                 // else right on target
-
-//                // sendMsg(tmpmsg);
-//             }
-//         }
-//     }
-// }
-
-void set_gpio(int dev, int pin, int value)
-{
-	const struct device *tempdev;
-	switch (dev)
-	{
-	case 1:
-		tempdev = gpio1_dev;
-		break;
-
-	case 2:
-		tempdev = gpio2_dev;
-
-		break;
-	case 3:
-		tempdev = gpio3_dev;
-		break;
-	case 4:
-		tempdev = gpio4_dev;
-		break;
-	default:
-		break;
-	}
-
-	gpio_pin_set(tempdev, pin, value);
-}
-
-int get_gpio(int dev, int pin)
-{
-	const struct device *tempdev;
-	switch (dev)
-	{
-	case 1:
-		tempdev = gpio1_dev;
-		break;
-
-	case 2:
-		tempdev = gpio2_dev;
-
-		break;
-	case 3:
-		tempdev = gpio3_dev;
-		break;
-	case 4:
-		tempdev = gpio4_dev;
-		break;
-	default:
-		break;
-	}
-
-	return gpio_pin_get(tempdev, pin);
-}
 
 void stepper_timer_callback(struct k_timer *timer_id)
 {
@@ -1361,7 +1178,8 @@ void stepper_timer_callback(struct k_timer *timer_id)
 				if (axes[i].pulse_state)
 				{
 					// End of pulse, prepare for the next one
-					set_gpio(axes[i].STEP_PIN[0], axes[i].STEP_PIN[1], 0);
+					// set_gpio(axes[i].STEP_PIN[0], axes[i].STEP_PIN[1], 0);
+					axes[i].set_gpio_step(0);
 					axes[i].steps_remaining--;
 					if (axes[i].step_des_pos > axes[i].step_pos)
 					{
@@ -1375,7 +1193,8 @@ void stepper_timer_callback(struct k_timer *timer_id)
 				else
 				{
 					// Start of pulse
-					set_gpio(axes[i].STEP_PIN[0], axes[i].STEP_PIN[1], 1);
+					// set_gpio(axes[i].STEP_PIN[0], axes[i].STEP_PIN[1], 1);
+					axes[i].set_gpio_step(1);
 				}
 
 				// Toggle pulse state
@@ -1398,24 +1217,20 @@ int main(void)
 {
 	uint32_t baudrate, dtr = 0U;
 	int ret;
-	gpio1_dev = DEVICE_DT_GET(DT_NODELABEL(gpio1));
-	gpio2_dev = DEVICE_DT_GET(DT_NODELABEL(gpio2));
-	gpio3_dev = DEVICE_DT_GET(DT_NODELABEL(gpio3));
-	gpio4_dev = DEVICE_DT_GET(DT_NODELABEL(gpio4));
+
+	// dev = DEVICE_DT_GET_ONE(zephyr_cdc_acm_uart);
+	// dev = DEVICE_DT_GET(DT_NODELABEL(uart_dev));
+	// dev = DEVICE_DT_GET(DT_CHOSEN(uart_dev));
 	dev = DEVICE_DT_GET_ONE(zephyr_cdc_acm_uart);
 	
 	if (!device_is_ready(dev))
 	{
-		// LOG_ERR("CDC ACM device not ready");
+		LOG_ERR("CDC ACM device not ready");
+		printk("done gpio11");
 		return 0;
 	}
 	
-
-#if defined(CONFIG_USB_DEVICE_STACK_NEXT)
-	ret = enable_usb_device_next();
-#else
 	ret = usb_enable(NULL);
-#endif
 
 	if (ret != 0)
 	{
@@ -1432,29 +1247,16 @@ int main(void)
 		uart_line_ctrl_get(dev, UART_LINE_CTRL_DTR, &dtr);
 		if (dtr)
 		{
+			printk("done gpio1111111");
 			break;
 		}
 		else
 		{
+			printk("done gpio1");
 			/* Give CPU resources to low priority threads. */
 			k_sleep(K_MSEC(100));
 		}
 	}
-
-	// LOG_INF("DTR set");
-
-	/* They are optional, we use them to test the interrupt endpoint */
-	// ret = uart_line_ctrl_set(dev, UART_LINE_CTRL_DCD, 1);
-	if (ret)
-	{
-		// LOG_WRN("Failed to set DCD, ret code %d", ret);
-	}
-
-	// ret = uart_line_ctrl_set(dev, UART_LINE_CTRL_DSR, 1);
-	// if (ret)
-	// {
-	// 	// LOG_WRN("Failed to set DSR, ret code %d", ret);
-	// }
 
 	/* Wait 100ms for the host to do all settings */
 	k_msleep(100);
@@ -1462,10 +1264,12 @@ int main(void)
 	ret = uart_line_ctrl_get(dev, UART_LINE_CTRL_BAUD_RATE, &baudrate);
 	if (ret)
 	{
+		printk("done gpio234");
 		// LOG_WRN("Failed to get baudrate, ret code %d", ret);
 	}
 	else
 	{
+		printk("done gpio234234");
 		// LOG_INF("Baudrate detected: %d", baudrate);
 	}
 
@@ -1480,16 +1284,16 @@ int main(void)
 	{
 		axes[i].index = i;
 
-		axes[i].STEP_PIN[0] = stepGPIO_PIN[i][0];
-		axes[i].STEP_PIN[1] = stepGPIO_PIN[i][1];
-		axes[i].DIR_PIN[0] = dirGPIO_PIN[i][0];
-		axes[i].DIR_PIN[1] = dirGPIO_PIN[i][1];
+		// axes[i].STEP_PIN[0] = stepGPIO_PIN[i][0];
+		// axes[i].STEP_PIN[1] = stepGPIO_PIN[i][1];
+		// axes[i].DIR_PIN[0] = dirGPIO_PIN[i][0];
+		// axes[i].DIR_PIN[1] = dirGPIO_PIN[i][1];
 
 		axes[i].ENC_PIN_A = encPinA[i];
 		axes[i].ENC_PIN_B = encPinB[i];
 
-		axes[i].LIMIT_PIN[0] = limGPIO_PIN[i][0];
-		axes[i].LIMIT_PIN[1] = limGPIO_PIN[i][1];
+		// axes[i].LIMIT_PIN[0] = limGPIO_PIN[i][0];
+		// axes[i].LIMIT_PIN[1] = limGPIO_PIN[i][1];
 
 		axes[i].PPR = ppr[i];
 		axes[i].REDUCTION = red[i];
@@ -1502,39 +1306,111 @@ int main(void)
 		axes[i].homing = 0;
 		axes[i].step_pos = 0;
 
-		axes[i].attach(); // must be called after pins declared
+		// axes[i].attach(); // must be called after pins declared
 
 		k_sleep(K_MSEC(50));
 
-		char axmsg[TX_BUF_SIZE];
+		// char axmsg[TX_BUF_SIZE];
 
-		sprintf(axmsg, "Axis %d attached at STEP: %d.%d, DIR: %d.%d, \n", i + 1, axes[i].STEP_PIN[0], axes[i].STEP_PIN[1], axes[i].DIR_PIN[0], axes[i].DIR_PIN[1]);
+		// sprintf(axmsg, "Axis %d attached at STEP: %d.%d, DIR: %d.%d, \n", i + 1, axes[i].STEP_PIN[0], axes[i].STEP_PIN[1], axes[i].DIR_PIN[0], axes[i].DIR_PIN[1]);
+
+		// sprintf(axmsg, "Axis %d attached at STEP: %d.%d, DIR: %d.%d, \n", i + 1, axes[i].step_spec.port->name , axes[i].step_spec.pin, axes[i].dir_spec.port->name, axes[i].dir_spec.pin);
 
 		// memcpy((uint8_t)axmsg, tx_bufferr, 64);
 
-		ring_buf_put(&ringbuf, (uint8_t *)axmsg, strlen(axmsg));
+		// ring_buf_put(&ringbuf, (uint8_t *)axmsg, strlen(axmsg));
 
-		uart_irq_tx_enable(dev); // Enable the TX interrupt to start sending
+		// uart_irq_tx_enable(dev); // Enable the TX interrupt to start sending
 		k_sleep(K_MSEC(50));
 	
 		// char buffer[100];
 		//  sprintf(buffer, "Axis %d attached at STEP: %d, DIR: %d\n", i, axes[i].STEP_PIN, axes[i].DIR_PIN);
 		//   print_uart(buffer);
 	}
-		switch (control_mode)
-		{
-		case VELOCITY_CONTROL:
-			sendMsg("Arm is in VELOCITY mode");
-			break;
-		case POSITION_CONTROL:
-			sendMsg("Arm is in POSITION mode");
-			break;
-		default:
-			sendMsg("ERROR Control Mode not recognized, something is very wrong!!");
-			k_sleep(K_MSEC(5000));
+	
+	axes[0].step_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(step0), gpios);
+	axes[1].step_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(step1), gpios);
+	axes[2].step_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(step2), gpios);
+	axes[3].step_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(step3), gpios);
+	axes[4].step_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(step4), gpios);
+	axes[5].step_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(step5), gpios);
 
-			break;
+	axes[0].dir_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(dir0), gpios);
+	axes[1].dir_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(dir1), gpios);
+	axes[2].dir_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(dir2), gpios);
+	axes[3].dir_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(dir3), gpios);
+	axes[4].dir_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(dir4), gpios);
+	axes[5].dir_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(dir5), gpios);
+
+	axes[0].lim_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(lim0), gpios);
+	axes[1].lim_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(lim1), gpios);
+	axes[2].lim_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(lim2), gpios);
+	axes[3].lim_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(lim3), gpios);
+	axes[4].lim_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(lim4), gpios);
+	axes[5].lim_spec = GPIO_DT_SPEC_GET(DT_NODELABEL(lim5), gpios);
+
+	for (int i = 0; i < 6; i++) {
+		if (!device_is_ready(axes[i].step_spec.port)) {
+			printk("Error: Step GPIO device for axis %d is not ready\n", i);
+			return 0;
 		}
+		else{
+			if (gpio_pin_configure_dt(&axes[i].step_spec, GPIO_OUTPUT_ACTIVE) != 0) {
+				printk("Error: Step GPIO device for axis %d is not configured\n", i);
+				return 0;
+			}
+			else{
+				printk("Error: Step GPIO device for axis %d is configured\n", i);
+			}
+		}
+
+		if (!device_is_ready(axes[i].dir_spec.port)) {
+			printk("Error: Dir GPIO device for axis %d is not ready\n", i);
+			return 0;
+		}
+		else{
+			if (gpio_pin_configure_dt(&axes[i].dir_spec, GPIO_INPUT) != 0) {
+				printk("Error: Dir GPIO device for axis %d is not configured\n", i);
+				return 0;
+			}
+			else{
+				printk("Error: Dir GPIO device for axis %d is configured\n", i);
+			}
+		}
+
+		if (!device_is_ready(axes[i].lim_spec.port)) {
+			printk("Error: Lim GPIO device for axis %d is not ready\n", i);
+			return 0;
+		}
+		else{
+			if (gpio_pin_configure_dt(&axes[i].lim_spec, GPIO_OUTPUT_ACTIVE) != 0) {
+				printk("Error: Lim GPIO device for axis %d is not configured\n", i);
+				return 0;
+			}
+			else{
+				printk("Error: Lim GPIO device for axis %d is not configured\n", i);
+			}
+		}
+
+	}
+	
+	printk("done gpio");
+	
+	switch (control_mode)
+	{
+	case VELOCITY_CONTROL:
+		printk("in velocity mode");
+		sendMsg("Arm is in VELOCITY mode");
+		break;
+	case POSITION_CONTROL:
+		sendMsg("Arm is in POSITION mode");
+		break;
+	default:
+		sendMsg("ERROR Control Mode not recognized, something is very wrong!!");
+		k_sleep(K_MSEC(5000));
+
+		break;
+	}
 	// //initiate axes, im sure there is a better way to orginize all this data
 
 	// degPerSec converter functions use axes data, so need to be called after initiation//nvm
@@ -1657,28 +1533,6 @@ int main(void)
 
 		}
 	}
-	// k_timer_start(&pingAnglePosition_timer, K_NO_WAIT, K_MSEC(25));
-
-	// sendMsg("Arm Ready \n");
-
-	// while (true) {
-	// 	//check serial for msgs
-	//     // uint8_t rx_buffer[64];
-	//     // int rb_len = ring_buf_get(&ringbuf, rx_buffer, sizeof(rx_buffer));
-	//     // if (rb_len) {
-	//     //     // Process the received data here
-	// 	// 	// uint8_t data_to_send[] = "MSG RECIEVED";
-	// 	// 	// ring_buf_put(&ringbuf, data_to_send, sizeof(data_to_send) - 1);
-	// 	// 	// uart_irq_tx_enable(dev); // Enable the TX interrupt to start sending
-
-	//     //     // buffer contains rb_len bytes of data
-	//     // }
-	//     // Sleep or yield if needed
-	// 		//k_sleep(K_MSEC(500));
-
-	// 		//stepAxis(0);
-
-	// }
 
 	return 0;
 }

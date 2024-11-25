@@ -1,0 +1,83 @@
+//https://docs.zephyrproject.org/latest/boards/pjrc/teensy4/doc/index.html
+//https://hackaday.com/wp-content/uploads/2020/05/teensy-4.1-pinout.png?w=640
+
+&zephyr_udc0 {
+	uart_dev: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};
+ 
+/ {
+    gpio_pins {
+        step_pins: step_pins {
+			compatible = "gpio-leds";
+            label = "Step Pins";
+            step0: pin0 {
+                gpios = <&gpio2 10 GPIO_ACTIVE_HIGH>;
+            };
+            step1: pin1 {
+                gpios = <&gpio2 16 GPIO_ACTIVE_HIGH>;
+            };
+            step2: pin2 {
+                gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+            };
+            step3: pin3 {
+                gpios = <&gpio2 0 GPIO_ACTIVE_HIGH>;
+            };
+            step4: pin4 {
+                gpios = <&gpio2 1 GPIO_ACTIVE_HIGH>;
+            };
+            step5: pin5 {
+                gpios = <&gpio1 13 GPIO_ACTIVE_HIGH>;
+            };
+        };
+
+		// Define direction GPIO pins
+		dir_pins: dir_pins {
+			compatible = "gpio-keys";
+			label = "Direction Pins";
+			dir0: pin0 {
+				gpios = <&gpio1 30 GPIO_ACTIVE_HIGH>;
+			};
+			dir1: pin1 {
+				gpios = <&gpio2 17 GPIO_ACTIVE_HIGH>;
+			};
+			dir2: pin2 {
+				gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
+			};
+			dir3: pin3 {
+				gpios = <&gpio2 11 GPIO_ACTIVE_HIGH>;
+			};
+			dir4: pin4 {
+				gpios = <&gpio2 2 GPIO_ACTIVE_HIGH>;
+			};
+			dir5: pin5 {
+				gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>;
+			};
+		};
+		
+		// Define limit GPIO pins
+		lim_pins: lim_pins {
+			compatible = "gpio-keys";
+			label = "Limit Pins";
+			lim0: pin0 {
+				gpios = <&gpio1 17 ( GPIO_PULL_UP)>;
+			};
+			lim1: pin1 {
+				gpios = <&gpio1 16 ( GPIO_PULL_UP)>;
+			};
+			lim2: pin2 {
+				gpios = <&gpio1 26 ( GPIO_PULL_UP)>;
+			};
+			lim3: pin3 {
+				gpios = <&gpio1 27 ( GPIO_PULL_UP)>;
+			};
+			lim4: pin4 {
+				gpios = <&gpio1 25 ( GPIO_PULL_UP)>;
+			};
+			lim5: pin5 {
+				gpios = <&gpio1 24 ( GPIO_PULL_UP)>;
+			};
+		};
+	};
+};

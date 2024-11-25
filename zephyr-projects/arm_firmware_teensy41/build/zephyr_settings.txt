@@ -6,9 +6,11 @@
 # and/or the west manifest file.
 #
 # See the Modules guide for more information.
-"DTS_ROOT":"/home/rowan/zephyrproject/modules/hal/atmel"
-"DTS_ROOT":"/home/rowan/zephyrproject/modules/hal/espressif"
-"DTS_ROOT":"/home/rowan/zephyrproject/modules/hal/gigadevice"
-"DTS_ROOT":"/home/rowan/zephyrproject/modules/hal/nuvoton"
-"DTS_ROOT":"/home/rowan/zephyrproject/modules/hal/nxp"
-"DTS_ROOT":"/home/rowan/zephyrproject/modules/hal/stm32"
+"DTS_ROOT":"/home/jodh/zephyrproject/modules/hal/adi"
+"DTS_ROOT":"/home/jodh/zephyrproject/modules/hal/atmel"
+"DTS_ROOT":"/home/jodh/zephyrproject/modules/hal/espressif"
+"DTS_ROOT":"/home/jodh/zephyrproject/modules/hal/gigadevice"
+"DTS_ROOT":"/home/jodh/zephyrproject/modules/hal/microchip"
+"DTS_ROOT":"/home/jodh/zephyrproject/modules/hal/nuvoton"
+"DTS_ROOT":"/home/jodh/zephyrproject/modules/hal/nxp"
+"DTS_ROOT":"/home/jodh/zephyrproject/modules/hal/stm32"
