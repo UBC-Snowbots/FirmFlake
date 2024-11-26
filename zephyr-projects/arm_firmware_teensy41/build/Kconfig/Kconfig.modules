@@ -28,9 +28,12 @@ config ZEPHYR_FATFS_MODULE
 	bool
 	default y
 endmenu
+config ZEPHYR_ADI_MODULE
+	bool
+	default y
 config ZEPHYR_ALTERA_MODULE
-   bool
-   default y
+	bool
+	default y
 menu "hal_ambiq (/home/rowan/zephyrproject/modules/hal/ambiq)"
 osource "$(ZEPHYR_HAL_AMBIQ_KCONFIG)"
 config ZEPHYR_HAL_AMBIQ_MODULE
@@ -38,14 +41,18 @@ config ZEPHYR_HAL_AMBIQ_MODULE
 	default y
 endmenu
 config ZEPHYR_ATMEL_MODULE
-   bool
-   default y
+	bool
+	default y
 menu "hal_espressif (/home/rowan/zephyrproject/modules/hal/espressif)"
 osource "/home/rowan/zephyrproject/modules/hal/espressif/zephyr/Kconfig"
 config ZEPHYR_HAL_ESPRESSIF_MODULE
 	bool
 	default y
 	select TAINT_BLOBS
+
+config ZEPHYR_HAL_ESPRESSIF_MODULE_BLOBS
+	bool
+	default y
 endmenu
 menu "hal_ethos_u (/home/rowan/zephyrproject/modules/hal/ethos_u)"
 osource "$(ZEPHYR_HAL_ETHOS_U_KCONFIG)"
@@ -64,48 +71,66 @@ osource "$(ZEPHYR_HAL_INFINEON_KCONFIG)"
 config ZEPHYR_HAL_INFINEON_MODULE
 	bool
 	default y
+
+config ZEPHYR_HAL_INFINEON_MODULE_BLOBS
+	bool
 endmenu
+menu "hal_intel (/home/rowan/zephyrproject/modules/hal/intel)"
+osource "/home/rowan/zephyrproject/modules/hal/intel/zephyr/Kconfig"
 config ZEPHYR_HAL_INTEL_MODULE
-   bool
-   default y
+	bool
+	default y
+endmenu
 config ZEPHYR_MICROCHIP_MODULE
-   bool
-   default y
+	bool
+	default y
 menu "hal_nordic (/home/rowan/zephyrproject/modules/hal/nordic)"
 osource "$(ZEPHYR_HAL_NORDIC_KCONFIG)"
 config ZEPHYR_HAL_NORDIC_MODULE
 	bool
 	default y
+
+config ZEPHYR_HAL_NORDIC_MODULE_BLOBS
+	bool
 endmenu
 config ZEPHYR_NUVOTON_MODULE
-   bool
-   default y
+	bool
+	default y
 menu "hal_nxp (/home/rowan/zephyrproject/modules/hal/nxp)"
 osource "$(ZEPHYR_HAL_NXP_KCONFIG)"
 config ZEPHYR_HAL_NXP_MODULE
 	bool
 	default y
+
+config ZEPHYR_HAL_NXP_MODULE_BLOBS
+	bool
 endmenu
 config ZEPHYR_OPENISA_MODULE
-   bool
-   default y
+	bool
+	default y
 config ZEPHYR_QUICKLOGIC_MODULE
-   bool
-   default y
+	bool
+	default y
 config ZEPHYR_HAL_RENESAS_MODULE
-   bool
-   default y
+	bool
+	default y
+
+config ZEPHYR_HAL_RENESAS_MODULE_BLOBS
+	bool
 menu "hal_rpi_pico (/home/rowan/zephyrproject/modules/hal/rpi_pico)"
 osource "$(ZEPHYR_HAL_RPI_PICO_KCONFIG)"
 config ZEPHYR_HAL_RPI_PICO_MODULE
 	bool
 	default y
 endmenu
-menu "silabs (/home/rowan/zephyrproject/modules/hal/silabs)"
-osource "/home/rowan/zephyrproject/modules/hal/silabs/zephyr/Kconfig"
-config ZEPHYR_SILABS_MODULE
+menu "hal_silabs (/home/rowan/zephyrproject/modules/hal/silabs)"
+osource "$(ZEPHYR_HAL_SILABS_KCONFIG)"
+config ZEPHYR_HAL_SILABS_MODULE
 	bool
 	default y
+
+config ZEPHYR_HAL_SILABS_MODULE_BLOBS
+	bool
 endmenu
 menu "hal_st (/home/rowan/zephyrproject/modules/hal/st)"
 osource "$(ZEPHYR_HAL_ST_KCONFIG)"
@@ -113,9 +138,12 @@ config ZEPHYR_HAL_ST_MODULE
 	bool
 	default y
 endmenu
-config ZEPHYR_STM32_MODULE
-   bool
-   default y
+config ZEPHYR_HAL_STM32_MODULE
+	bool
+	default y
+
+config ZEPHYR_HAL_STM32_MODULE_BLOBS
+	bool
 menu "hal_telink (/home/rowan/zephyrproject/modules/hal/telink)"
 osource "/home/rowan/zephyrproject/modules/hal/telink/Kconfig"
 config ZEPHYR_HAL_TELINK_MODULE
@@ -123,14 +151,14 @@ config ZEPHYR_HAL_TELINK_MODULE
 	default y
 endmenu
 config ZEPHYR_TI_MODULE
-   bool
-   default y
+	bool
+	default y
 config ZEPHYR_HAL_WURTHELEKTRONIK_MODULE
-   bool
-   default y
+	bool
+	default y
 config ZEPHYR_XTENSA_MODULE
-   bool
-   default y
+	bool
+	default y
 menu "hostap (/home/rowan/zephyrproject/modules/lib/hostap)"
 osource "$(ZEPHYR_HOSTAP_KCONFIG)"
 config ZEPHYR_HOSTAP_MODULE
@@ -138,8 +166,8 @@ config ZEPHYR_HOSTAP_MODULE
 	default y
 endmenu
 config ZEPHYR_LIBMETAL_MODULE
-   bool
-   default y
+	bool
+	default y
 menu "liblc3 (/home/rowan/zephyrproject/modules/lib/liblc3)"
 osource "$(ZEPHYR_LIBLC3_KCONFIG)"
 config ZEPHYR_LIBLC3_MODULE
@@ -171,17 +199,17 @@ config ZEPHYR_MBEDTLS_MODULE
 	default y
 endmenu
 config ZEPHYR_MCUBOOT_MODULE
-   bool
-   default y
+	bool
+	default y
 config ZEPHYR_MIPI_SYS_T_MODULE
-   bool
-   default y
+	bool
+	default y
 config ZEPHYR_NRF_HW_MODELS_MODULE
-   bool
-   default y
+	bool
+	default y
 config ZEPHYR_OPEN_AMP_MODULE
-   bool
-   default y
+	bool
+	default y
 menu "openthread (/home/rowan/zephyrproject/modules/lib/openthread)"
 osource "$(ZEPHYR_OPENTHREAD_KCONFIG)"
 config ZEPHYR_OPENTHREAD_MODULE
@@ -207,8 +235,8 @@ config ZEPHYR_SEGGER_MODULE
 	default y
 endmenu
 config ZEPHYR_TINYCRYPT_MODULE
-   bool
-   default y
+	bool
+	default y
 menu "trusted-firmware-m (/home/rowan/zephyrproject/modules/tee/tf-m/trusted-firmware-m)"
 osource "$(ZEPHYR_TRUSTED_FIRMWARE_M_KCONFIG)"
 config ZEPHYR_TRUSTED_FIRMWARE_M_MODULE
