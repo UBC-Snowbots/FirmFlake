@@ -1,14 +1,14 @@
-# 0 "/home/rowan/zephyrproject/zephyr/misc/empty_file.c"
+# 0 "/home/jodh/zephyrproject/zephyr/misc/empty_file.c"
 # 0 "<built-in>"
 # 0 "<command-line>"
-# 1 "/home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy41.dts" 1
+# 1 "/home/jodh/zephyrproject/zephyr/boards/pjrc/teensy4/teensy41.dts" 1
 
 
 
 
 
 
-# 1 "/home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy40.dts" 1
+# 1 "/home/jodh/zephyrproject/zephyr/boards/pjrc/teensy4/teensy40.dts" 1
 
 
 
@@ -17,34 +17,34 @@
 
 /dts-v1/;
 
-# 1 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt1060.dtsi" 1 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt1060.dtsi" 1 3 4
 
 
 
 
 
 
-# 1 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 1 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 1 3 4
 
 
 
 
 
 
-# 1 "/home/rowan/zephyrproject/zephyr/dts/common/mem.h" 1 3 4
-# 8 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
-# 1 "/home/rowan/zephyrproject/zephyr/dts/arm/armv7-m.dtsi" 1 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/dts/common/mem.h" 1 3 4
+# 8 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/dts/arm/armv7-m.dtsi" 1 3 4
 
 
-# 1 "/home/rowan/zephyrproject/zephyr/dts/common/skeleton.dtsi" 1 3 4
-# 9 "/home/rowan/zephyrproject/zephyr/dts/common/skeleton.dtsi" 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/dts/common/skeleton.dtsi" 1 3 4
+# 9 "/home/jodh/zephyrproject/zephyr/dts/common/skeleton.dtsi" 3 4
 / {
  #address-cells = <1>;
  #size-cells = <1>;
  chosen { };
  aliases { };
 };
-# 4 "/home/rowan/zephyrproject/zephyr/dts/arm/armv7-m.dtsi" 2 3 4
+# 4 "/home/jodh/zephyrproject/zephyr/dts/arm/armv7-m.dtsi" 2 3 4
 
 / {
  soc {
@@ -68,19 +68,48 @@
   };
  };
 };
-# 9 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
-# 1 "/home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/adc/adc.h" 1 3 4
-# 10 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
-# 1 "/home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/clock/imx_ccm.h" 1 3 4
-# 11 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
-# 1 "/home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/gpio/gpio.h" 1 3 4
-# 12 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
-# 1 "/home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/i2c/i2c.h" 1 3 4
-# 13 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
-# 1 "/home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/pwm/pwm.h" 1 3 4
-# 14 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
-# 1 "/home/rowan/zephyrproject/zephyr/include/zephyr/dt-bindings/memory-controller/nxp,flexram.h" 1 3 4
-# 15 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
+# 9 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/adc/adc.h" 1 3 4
+# 9 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/adc/adc.h" 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/dt-util.h" 1 3 4
+# 19 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/dt-util.h" 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_macro.h" 1 3 4
+# 34 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_macro.h" 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal.h" 1 3 4
+# 18 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal.h" 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_loops.h" 1 3 4
+# 1083 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_loops.h" 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_listify.h" 1 3 4
+# 1084 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_loops.h" 2 3 4
+# 19 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal.h" 2 3 4
+# 162 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal.h" 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal_is_eq.h" 1 3 4
+# 163 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal.h" 2 3 4
+# 193 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal.h" 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal_util_inc.h" 1 3 4
+# 194 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal.h" 2 3 4
+
+
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal_util_dec.h" 1 3 4
+# 197 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal.h" 2 3 4
+
+
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal_util_x2.h" 1 3 4
+# 200 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_internal.h" 2 3 4
+# 35 "/home/jodh/zephyrproject/zephyr/include/zephyr/sys/util_macro.h" 2 3 4
+# 20 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/dt-util.h" 2 3 4
+# 10 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/adc/adc.h" 2 3 4
+# 10 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/clock/imx_ccm.h" 1 3 4
+# 11 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/gpio/gpio.h" 1 3 4
+# 12 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/i2c/i2c.h" 1 3 4
+# 13 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/pwm/pwm.h" 1 3 4
+# 14 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
+# 1 "/home/jodh/zephyrproject/zephyr/include/zephyr/dt-bindings/memory-controller/nxp,flexram.h" 1 3 4
+# 15 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt10xx.dtsi" 2 3 4
 
 / {
  chosen {
@@ -363,6 +392,15 @@
    ipg-podf {
     compatible = "fixed-factor-clock";
     clock-div = <1>;
+    #clock-cells = <0>;
+   };
+
+   sys-pll {
+    compatible = "nxp,imx-ccm-fnpll";
+    loop-div = <22>;
+    numerator = <0>;
+    denominator = <1>;
+    src = <0>;
     #clock-cells = <0>;
    };
 
@@ -836,18 +874,29 @@
    };
   };
 
-  enet: ethernet@402d8000 {
-   compatible = "nxp,kinetis-ethernet";
+  enet: enet@402d8000 {
+   compatible = "nxp,enet";
    reg = <0x402D8000 0x628>;
-   interrupts = <114 0>;
-   interrupt-names = "COMMON";
-   status = "disabled";
-   phy-addr = <0>;
-   ptp: ptp {
-    compatible = "nxp,kinetis-ptp";
+   clocks = <&ccm 0x0E00UL 0 0>;
+   enet_mac: ethernet {
+    compatible = "nxp,enet-mac";
+    interrupts = <114 0>;
+    interrupt-names = "COMMON";
+    nxp,mdio = <&enet_mdio>;
+    nxp,ptp-clock = <&enet_ptp_clock>;
     status = "disabled";
+   };
+   enet_mdio: mdio {
+    compatible = "nxp,enet-mdio";
+    status = "disabled";
+    #address-cells = <1>;
+    #size-cells = <0>;
+   };
+   enet_ptp_clock: ptp_clock {
+    compatible = "nxp,enet-ptp-clock";
     interrupts = <115 0>;
-    interrupt-names = "IEEE1588_TMR";
+    status = "disabled";
+    clocks = <&ccm 0x0E01UL 0 0>;
    };
   };
 
@@ -881,6 +930,18 @@
    interrupt-names = "usb_otg";
    clocks = <&usbclk>;
    num-bidir-endpoints = <8>;
+   status = "disabled";
+  };
+
+  usbphy1: usbphy@400d9000 {
+   compatible = "nxp,usbphy";
+   reg = <0x400D9000 0x1000>;
+   status = "disabled";
+  };
+
+  usbphy2: usbphy@400da000 {
+   compatible = "nxp,usbphy";
+   reg = <0x400DA000 0x1000>;
    status = "disabled";
   };
 
@@ -941,7 +1002,6 @@
    interrupt-names = "common";
    clocks = <&ccm 0x0900UL 0x68 14>;
    clk-source = <2>;
-   sample-point = <875>;
    status = "disabled";
   };
 
@@ -952,7 +1012,6 @@
    interrupt-names = "common";
    clocks = <&ccm 0x0900UL 0x68 18>;
    clk-source = <2>;
-   sample-point = <875>;
    status = "disabled";
   };
 
@@ -963,8 +1022,6 @@
    interrupt-names = "common";
    clocks = <&ccm 0x0900UL 0x84 6>;
    clk-source = <2>;
-   sample-point = <875>;
-   sample-point-data = <875>;
    status = "disabled";
   };
 
@@ -1156,6 +1213,49 @@
    reg = <0x400d8000 0x2a0>;
    status = "disabled";
   };
+
+  pit0: pit@40084000 {
+   compatible = "nxp,pit";
+   reg = <0x40084000 0x1000>;
+   clocks = <&ccm 0x1000UL 0x0 0>;
+   interrupts = <122 0>;
+   max-load-value = <0xffffffff>;
+   status = "disabled";
+   #address-cells = <1>;
+   #size-cells = <0>;
+
+   pit0_channel0: pit0_channel@0 {
+    compatible = "nxp,pit-channel";
+    reg = <0>;
+    status = "disabled";
+   };
+
+   pit0_channel1: pit0_channel@1 {
+    compatible = "nxp,pit-channel";
+    reg = <1>;
+    status = "disabled";
+   };
+
+   pit0_channel2: pit0_channel@2 {
+    compatible = "nxp,pit-channel";
+    reg = <2>;
+    status = "disabled";
+   };
+
+   pit0_channel3: pit0_channel@3 {
+    compatible = "nxp,pit-channel";
+    reg = <3>;
+    status = "disabled";
+   };
+  };
+
+  flexio1: flexio@401ac000 {
+   compatible = "nxp,flexio";
+   reg = <0x401ac000 0x4000>;
+   status = "disabled";
+   interrupts = <90 0>;
+   clocks = <&ccm 0x1100UL 0 0>;
+  };
  };
 };
 
@@ -1170,7 +1270,7 @@
 
  status = "disabled";
 };
-# 8 "/home/rowan/zephyrproject/zephyr/dts/arm/nxp/nxp_rt1060.dtsi" 2 3 4
+# 8 "/home/jodh/zephyrproject/zephyr/dts/arm/nxp/nxp_rt1060.dtsi" 2 3 4
 
 &flexram {
 
@@ -1215,16 +1315,29 @@
  soc {
 
   enet2: ethernet@402d4000 {
-   compatible = "nxp,kinetis-ethernet";
-   reg = <0x402D4000 0x628>;
-   interrupts = <152 0>;
-   interrupt-names = "COMMON";
-   status = "disabled";
-   ptp {
-    compatible = "nxp,kinetis-ptp";
+   compatible = "nxp,enet";
+   reg = <0x402d4000 0x628>;
+   clocks = <&ccm 0x0E00UL 0 0>;
+   enet2_mac: ethernet {
+    compatible = "nxp,enet-mac";
+    interrupts = <152 0>;
+    interrupt-names = "COMMON";
+    nxp,mdio = <&enet2_mdio>;
+    nxp,ptp-clock = <&enet_ptp_clock>;
+    status = "disabled";
+   };
+   enet2_mdio: mdio {
+    compatible = "nxp,enet-mdio";
+    status = "disabled";
+    #address-cells = <1>;
+    #size-cells = <0>;
+   };
+   enet2_ptp_clock: ptp_clock {
+    compatible = "nxp,enet-ptp-clock";
     status = "disabled";
     interrupts = <153 0>;
     interrupt-names = "IEEE1588_TMR";
+    clocks = <&ccm 0x0E01UL 0 0>;
    };
   };
 
@@ -1233,6 +1346,22 @@
    compatible = "zephyr,memory-region", "mmio-sram";
    reg = <0x20200000 ((512) * 1024)>;
    zephyr,memory-region = "OCRAM2";
+  };
+
+  flexio2: flexio@401b0000 {
+   compatible = "nxp,flexio";
+   reg = <0x401b0000 0x4000>;
+   status = "disabled";
+   interrupts = <91 0>;
+   clocks = <&ccm 0x1101UL 0 0>;
+  };
+
+  flexio3: flexio@42020000 {
+   compatible = "nxp,flexio";
+   reg = <0x42020000 0x4000>;
+   status = "disabled";
+   interrupts = <156 0>;
+   clocks = <&ccm 0x1101UL 0 0>;
   };
  };
 };
@@ -1520,11 +1649,11 @@
   <&iomuxc_gpio_emc_30_gpio9_io30>,
   <&iomuxc_gpio_emc_31_gpio9_io31>;
 };
-# 10 "/home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy40.dts" 2
-# 1 "/home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy4-pinctrl.dtsi" 1
-# 9 "/home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy4-pinctrl.dtsi"
-# 1 "/home/rowan/zephyrproject/modules/hal/nxp/dts/nxp/nxp_imx/rt/mimxrt1062dvl6a-pinctrl.dtsi" 1 3 4
-# 25 "/home/rowan/zephyrproject/modules/hal/nxp/dts/nxp/nxp_imx/rt/mimxrt1062dvl6a-pinctrl.dtsi" 3 4
+# 10 "/home/jodh/zephyrproject/zephyr/boards/pjrc/teensy4/teensy40.dts" 2
+# 1 "/home/jodh/zephyrproject/zephyr/boards/pjrc/teensy4/teensy4-pinctrl.dtsi" 1
+# 9 "/home/jodh/zephyrproject/zephyr/boards/pjrc/teensy4/teensy4-pinctrl.dtsi"
+# 1 "/home/jodh/zephyrproject/modules/hal/nxp/dts/nxp/nxp_imx/rt/mimxrt1062dvl6a-pinctrl.dtsi" 1 3 4
+# 25 "/home/jodh/zephyrproject/modules/hal/nxp/dts/nxp/nxp_imx/rt/mimxrt1062dvl6a-pinctrl.dtsi" 3 4
 &iomuxc {
  /omit-if-no-ref/ iomuxc_gpio_ad_b0_00_acmp1_in4: IOMUXC_GPIO_AD_B0_00_ACMP1_IN4 {
   pinmux = <0x401f80bc 5 0x0 0 0x401f82ac>;
@@ -5478,7 +5607,7 @@
   pinmux = <0x400a8000 5 0x0 0 0x400a8018>;
  };
 };
-# 10 "/home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy4-pinctrl.dtsi" 2
+# 10 "/home/jodh/zephyrproject/zephyr/boards/pjrc/teensy4/teensy4-pinctrl.dtsi" 2
 
 &pinctrl {
 
@@ -5601,9 +5730,9 @@
  pinmux_lpspi3: pinmux_lpspi3 {
   group0 {
    pinmux = <&iomuxc_gpio_ad_b1_12_lpspi3_pcs0>,
-    <&iomuxc_gpio_ad_b0_00_lpspi3_sck>,
-    <&iomuxc_gpio_ad_b0_02_lpspi3_sdi>,
-    <&iomuxc_gpio_ad_b0_01_lpspi3_sdo>;
+    <&iomuxc_gpio_ad_b1_15_lpspi3_sck>,
+    <&iomuxc_gpio_ad_b1_13_lpspi3_sdi>,
+    <&iomuxc_gpio_ad_b1_14_lpspi3_sdo>;
    drive-strength = "r0-6";
    slew-rate = "slow";
    nxp,speed = "100-mhz";
@@ -5956,9 +6085,9 @@
  };
 
 };
-# 11 "/home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy40.dts" 2
-# 1 "/home/rowan/zephyrproject/zephyr/dts/common/freq.h" 1 3 4
-# 12 "/home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy40.dts" 2
+# 11 "/home/jodh/zephyrproject/zephyr/boards/pjrc/teensy4/teensy40.dts" 2
+# 1 "/home/jodh/zephyrproject/zephyr/dts/common/freq.h" 1 3 4
+# 12 "/home/jodh/zephyrproject/zephyr/boards/pjrc/teensy4/teensy40.dts" 2
 
 
 / {
@@ -6016,29 +6145,34 @@ zephyr_udc0: &usb1 {
  current-speed = < 115200 >;
 };
 
-&flexcan1 {
- status = "okay";
- bus-speed = < 125000 >;
-};
-
 &edma0 {
  status = "okay";
 };
 
 
-&enet {
+&enet_mac {
  pinctrl-0 = <&pinmux_enet>;
  pinctrl-names = "default";
+ zephyr,random-mac-address;
+ phy-connection-type = "rmii";
+ phy-handle = <&phy>;
+};
+
+&enet_mdio {
+ status = "okay";
+ pinctrl-0 = <&pinmux_enet>;
+ pinctrl-names = "default";
+ phy: phy@0 {
+  compatible = "ethernet-phy";
+  reg = <0>;
+  status = "okay";
+ };
 };
 
 &flexcan1 {
  pinctrl-0 = <&pinmux_flexcan1>;
  pinctrl-names = "default";
-};
-
-&flexcan1 {
- pinctrl-0 = <&pinmux_flexcan1>;
- pinctrl-names = "default";
+ status = "okay";
 };
 
 &flexcan2 {
@@ -6135,7 +6269,7 @@ zephyr_udc0: &usb1 {
 &systick {
  status = "okay";
 };
-# 8 "/home/rowan/zephyrproject/zephyr/boards/arm/teensy4/teensy41.dts" 2
+# 8 "/home/jodh/zephyrproject/zephyr/boards/pjrc/teensy4/teensy41.dts" 2
 
 / {
  model = "PJRC TEENSY 4.1 board";
@@ -6183,11 +6317,11 @@ zephyr_udc0: &usb1 {
  };
 };
 # 0 "<command-line>" 2
-# 1 "/home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41/app.overlay" 1
+# 1 "/home/jodh/FirmFlake/zephyr-projects/arm_firmware_teensy41/app.overlay" 1
 &zephyr_udc0 {
  cdc_acm_uart0 {
   compatible = "zephyr,cdc-acm-uart";
  };
 };
 # 0 "<command-line>" 2
-# 1 "/home/rowan/zephyrproject/zephyr/misc/empty_file.c"
+# 1 "/home/jodh/zephyrproject/zephyr/misc/empty_file.c"

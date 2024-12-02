@@ -45,7 +45,7 @@ this is not easy
 #define DEBUG_MSGS true
 
 // general parameters
-#define NUM_AXES 6
+#define NUM_AXES 7
 #define ON 0
 #define OFF 1
 #define SW_ON 0
@@ -100,28 +100,28 @@ this is not easy
 
 
 // Motor pins     
-inline int stepPins[6] =   {6, 8, 2, 10, 12, 25}; 
-inline int dirPins[6] =    {5, 7, 1, 9, 11, 24}; 
+// inline int stepPins[6] =   {6, 8, 2, 10, 12, 25}; 
+// inline int dirPins[6] =    {5, 7, 1, 9, 11, 24}; 
 
 //To GPIO devs                  //not working: 3 //working one dir: 1   // working: 2, 4, 5, 6 
-inline int stepGPIO_PIN[6][2] =   {{2,10}, {2,16}, {1,3}, {2,0}, {2,1}, {1,13}}; 
-inline int dirGPIO_PIN[6][2] =    {{1,30}, {2,17}, {1,2}, {2,11}, {2,2}, {1,12}}; 
+inline int stepGPIO_PIN[NUM_AXES][2] =   {{2,10}, {2,16}, {1,3}, {2,0}, {2,1}, {1,13}, {4, 6}}; 
+inline int dirGPIO_PIN[NUM_AXES][2] =    {{1,30}, {2,17}, {1,2}, {2,11}, {2,2}, {1,12}, {4, 5}}; 
 inline int arpo = 0;
 
 // Encoder pins
-inline int encPinA[6] = {17, 38, 40, 36, 13, 15};
-inline int encPinB[6] = {16, 37, 39, 35, 41, 14};
+// inline int encPinA[6] = {17, 38, 40, 36, 13, 15};
+// inline int encPinB[6] = {16, 37, 39, 35, 41, 14};
 
 // limit switch pins
-inline int limPins[6] = {18, 19, 20, 21, 23, 22};
-inline int limGPIO_PIN[6][6] = {{1,17}, {1,16}, {1,26}, {1,27}, {1,25}, {1,24}};
+// inline int limPins[6] = {18, 19, 20, 21, 23, 22};
+inline int limGPIO_PIN[NUM_AXES][2] = {{1,17}, {1,16}, {1,26}, {1,27}, {1,25}, {1,24}, {4, 8}};
 
 // pulses per revolution for motors
-inline int ppr[6] = {400, 400, 400, 400, 400, 400};
+inline int ppr[NUM_AXES] = {400, 400, 400, 400, 400, 400, 400};
 
 // Gear Reductions
 // inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 5.18}; 
-inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 150.00}; //? Double check with arm 
+inline float red[NUM_AXES] = {50.0, 160.0, 92.3077, 43.936, 57.0, 150.00, 100.0}; //? Double check with arm 
 // inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 20.00}; //? Double check with arm -> August 11th
 
 
@@ -161,7 +161,7 @@ inline bool arm_inited = false;
 // Encoder Variables
 inline int curEncSteps[NUM_AXES], cmdEncSteps[NUM_AXES];
 const int pprEnc = 512;
-const float ENC_MULT[] = {5.12, 5.12, 5.12, 5.12, 5.12, 5.12};
+// const float ENC_MULT[] = {5.12, 5.12, 5.12, 5.12, 5.12, 5.12};
 inline float ENC_STEPS_PER_DEG[NUM_AXES];
 
 inline int control_mode = VELOCITY_CONTROL;
