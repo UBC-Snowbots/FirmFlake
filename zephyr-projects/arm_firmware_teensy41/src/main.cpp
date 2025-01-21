@@ -1651,6 +1651,8 @@ int main(void)
 
 		}
 	}
+	k_timer_start(&pingAnglePosition_timer, K_MSEC(2), K_MSEC(POSITION_PING_MS_INTERVAL));
+
 	// k_timer_start(&pingAnglePosition_timer, K_NO_WAIT, K_MSEC(25));
 
 	// sendMsg("Arm Ready \n");
