@@ -1,16 +1,16 @@
 
 
-//Joystick 1 Pins
-const int xAxisPin1 = A0; 
-const int yAxisPin1 = A1;
-const int zAxisPin1 = A2;
-const int buttonPin1 = 2;
+//Joystick right Pins
+const int xAxisPin2 = A1; 
+const int yAxisPin2 = A0;
+const int zAxisPin2 = A2;
+const int buttonPin2 = 2;
 
-//Joystick 2 Pins 
-const int xAxisPin2 = A3;
-const int yAxisPin2 = A4; 
-const int zAxisPin2 = A5; 
-const int buttonPin2 = 3; 
+//Joystick left Pins 
+const int xAxisPin1 = A4;
+const int yAxisPin1 = A3; 
+const int zAxisPin1 = A5; 
+const int buttonPin1 = 3; 
 
 const int centerValue = 512; // Analog midpoint
 const int deadZoneMin = 440; // Lower dead zone threshold
@@ -18,9 +18,12 @@ const int deadZoneMax = 583; // Upper dead zone threshold
 const int minAnalog = 0;     // Min Analog value
 const int maxAnalog = 1023;  // Max Analog value
 
+//#define minAnalogZ 0
+//#define maxAnalogZ 600
+
 #define RATE_HZ 100
 
-#define TEST
+//#define TEST //Uncomment to print raw values instead of adj values
 
 long interval_ms = 99;
 long last_time = 0;
@@ -82,8 +85,8 @@ Serial.print("TESING: ");
 
 
   // Print joystick values with adjusted dead zone
-  Serial.print("$arm_joy(");
-  Serial.print(adjX1);
+  Serial.print("$arm_joy_panel(");
+  Serial.print(adjX1, DEC);
   Serial.print(",");
   Serial.print(adjY1);
   Serial.print(",");
@@ -92,7 +95,7 @@ Serial.print("TESING: ");
   Serial.print(buttonState1 == LOW ? "1" : "0");
 
   Serial.print(",");
-  Serial.print(adjX2);
+  Serial.print(adjX2, DEC);
   Serial.print(",");
   Serial.print(adjY2);
   Serial.print(",");
