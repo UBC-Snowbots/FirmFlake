@@ -59,6 +59,7 @@ this is not easy
 
 #define ARM_DEG_RESOLUTION 0.01
 #define ARM_DEG_VELOCITY_RESOLUTION 0.05
+#define EE_INDEX 6
 
 #define HOME 1
 #define ABSOLUTE_TARGET_POSITION 2
@@ -97,7 +98,7 @@ this is not easy
 
 //weird pin mappings
 //all the usefull documentation I could find: https://docs.zephyrproject.org/latest/boards/arm/teensy4/doc/index.html 
-
+// https://docs.zephyrproject.org/latest/boards/pjrc/teensy4/doc/index.html
 
 // Motor pins     
 // inline int stepPins[6] =   {6, 8, 2, 10, 12, 25}; 

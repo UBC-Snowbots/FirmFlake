@@ -585,7 +585,8 @@ void home_timer_callback(struct k_timer *timer_id)
 {
 	//timer callback for the homing sequence. still uses axes.step to move the motors.
 	// k_timer_stop(&pingAnglePosition_timer);
-
+	axes[EE_INDEX].homed = true;
+	axes[EE_INDEX].homing = false;
 	homing_complete = true;
 	for (int i = 0; i < NUM_AXES; i++)
 	{
@@ -1689,7 +1690,7 @@ int main(void)
 
 		}
 	}
-	// k_timer_start(&pingAnglePosition_timer, K_NO_WAIT, K_MSEC(25));
+	k_timer_start(&pingAnglePosition_timer, K_NO_WAIT, K_MSEC(25));
 
 	// sendMsg("Arm Ready \n");
 
