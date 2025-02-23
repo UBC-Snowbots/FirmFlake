@@ -229,33 +229,41 @@ void tx_enable_callback(struct k_timer *timer_id)
 
 void pingStepPosition_timer_callback(struct k_timer *timer_id)
 {
-
-	char msg[TX_BUF_SIZE];
-	sprintf(msg, "$my_stepP(%i, %i, %i, %i, %i, %i)\n\r\0", axes[0].step_pos, axes[1].step_pos, axes[2].step_pos, axes[3].step_pos, axes[4].step_pos, axes[5].step_pos);
-	ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-	uart_irq_tx_enable(dev);
+    char msg[TX_BUF_SIZE];
+    sprintf(msg, "$my_stepP(%i, %i, %i, %i, %i, %i, %i)\n\r\0", 
+            axes[0].step_pos, axes[1].step_pos, axes[2].step_pos, 
+            axes[3].step_pos, axes[4].step_pos, axes[5].step_pos, 
+            axes[6].step_pos);
+    ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
+    uart_irq_tx_enable(dev);
 }
 
 void pingAnglePosition_timer_callback(struct k_timer *timer_id)
 {
+    updateAngles();
 
-	 updateAngles();
-
-
-	char msg[TX_BUF_SIZE];
-	sprintf(msg, "$my_angleP(%0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f)\n\r\0", axes[0].angle_pos, axes[1].angle_pos, axes[2].angle_pos, axes[3].angle_pos, axes[4].angle_pos, axes[5].angle_pos);
-	ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-	uart_irq_tx_enable(dev);
+    char msg[TX_BUF_SIZE];
+    sprintf(msg, "$my_angleP(%0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f)\n\r\0", 
+            axes[0].angle_pos, axes[1].angle_pos, axes[2].angle_pos, 
+            axes[3].angle_pos, axes[4].angle_pos, axes[5].angle_pos, 
+            axes[6].angle_pos);
+    ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
+    uart_irq_tx_enable(dev);
 }
+
 void pingSpeed_timer_callback(struct k_timer *timer_id)
 {
-
-	char msg[TX_BUF_SIZE];
-	sprintf(msg, "$my_stepS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n\r\0", axes[0].current_speed, axes[0].target_speed, axes[1].current_speed, axes[1].target_speed, axes[2].current_speed, axes[2].target_speed, axes[3].current_speed, axes[3].target_speed, axes[4].current_speed, axes[4].target_speed, axes[5].current_speed, axes[5].target_speed);
-	//sprintf(msg, "$my_angleS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n\r\0", usecPerStepToDegPerSec(axes[0].current_speed, 0), usecPerStepToDegPerSec(axes[0].target_speed, 0), usecPerStepToDegPerSec(axes[1].current_speed, 1), usecPerStepToDegPerSec(axes[1].target_speed, 1), usecPerStepToDegPerSec(axes[2].current_speed, 2), usecPerStepToDegPerSec(axes[2].target_speed, 2),  usecPerStepToDegPerSec(axes[3].current_speed, 3), usecPerStepToDegPerSec(axes[3].target_speed, 3), usecPerStepToDegPerSec(axes[4].current_speed, 4), usecPerStepToDegPerSec(axes[4].target_speed, 4), usecPerStepToDegPerSec(axes[5].current_speed, 5), usecPerStepToDegPerSec(axes[5].target_speed, 5));
-	
-	ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-	uart_irq_tx_enable(dev);
+    char msg[TX_BUF_SIZE];
+    sprintf(msg, "$my_stepS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n\r\0", 
+            axes[0].current_speed, axes[0].target_speed, 
+            axes[1].current_speed, axes[1].target_speed, 
+            axes[2].current_speed, axes[2].target_speed, 
+            axes[3].current_speed, axes[3].target_speed, 
+            axes[4].current_speed, axes[4].target_speed, 
+            axes[5].current_speed, axes[5].target_speed, 
+            axes[6].current_speed, axes[6].target_speed);
+    ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
+    uart_irq_tx_enable(dev);
 }
 
 void updateAngles()
@@ -577,7 +585,8 @@ void home_timer_callback(struct k_timer *timer_id)
 {
 	//timer callback for the homing sequence. still uses axes.step to move the motors.
 	// k_timer_stop(&pingAnglePosition_timer);
-
+	axes[EE_INDEX].homed = true;
+	axes[EE_INDEX].homing = false;
 	homing_complete = true;
 	for (int i = 0; i < NUM_AXES; i++)
 	{
@@ -1009,21 +1018,24 @@ void parseHomeCmd(uint8_t homeCmd[RX_BUF_SIZE])
 		break;
 	}
 
-	 if(requested_axis < 0 || requested_axis > 6){
+	 if(requested_axis < 0 || requested_axis > NUM_AXES){
+		char msg[TX_BUF_SIZE];
+				sprintf(msg, "requested %d, out of range \n\r\0", requested_axis);
 				sendMsg("Error parsing requested_axis. Ignoring homing request\n");
+				sendMsg(msg);
 				return;
 			}
 	if (!arm_homing)
 	{
 
-		for (int i = 0; i < NUM_AXES; i++)
-		{
-			if (get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]))
-			{
-				//TODO add specific diagnostics for each axis. I'm thinking an axis.switch_health instead of switch_health
-				switch_health = false;
-			}
-		}
+		// for (int i = 0; i < NUM_AXES; i++)
+		// {
+		// 	if (get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]))
+		// 	{
+		// 		//TODO add specific diagnostics for each axis. I'm thinking an axis.switch_health instead of switch_health
+		// 		switch_health = false;
+		// 	}
+		// }
 
 		if (switch_health)
 		{
@@ -1479,8 +1491,8 @@ int main(void)
 		axes[i].DIR_PIN[0] = dirGPIO_PIN[i][0];
 		axes[i].DIR_PIN[1] = dirGPIO_PIN[i][1];
 
-		axes[i].ENC_PIN_A = encPinA[i];
-		axes[i].ENC_PIN_B = encPinB[i];
+		// axes[i].ENC_PIN_A = encPinA[i];
+		// axes[i].ENC_PIN_B = encPinB[i];
 
 		axes[i].LIMIT_PIN[0] = limGPIO_PIN[i][0];
 		axes[i].LIMIT_PIN[1] = limGPIO_PIN[i][1];
@@ -1529,30 +1541,46 @@ int main(void)
 
 			break;
 		}
+
+
+	//to test doesnt work
+	
+	// set_gpio(axes[6].DIR_PIN[0], axes[6].DIR_PIN[1], 1);
+	// while (true)
+	// {
+	// 	sendMsg("going");
+	// 	set_gpio(axes[6].STEP_PIN[0], axes[6].STEP_PIN[1], 1);
+	// 	k_sleep(K_USEC(500));
+	// 	set_gpio(axes[6].STEP_PIN[0], axes[6].STEP_PIN[1], 0);
+	// 	k_sleep(K_USEC(500));
+	// }
+	
 	// //initiate axes, im sure there is a better way to orginize all this data
 
 	// degPerSec converter functions use axes data, so need to be called after initiation//nvm
-	axes[0].max_speed = degPerSecToUsecPerStep(80.0, 0);  // 500;
-	axes[1].max_speed = degPerSecToUsecPerStep(40.0, 1);	  // 800;
-	axes[2].max_speed = degPerSecToUsecPerStep(60.0, 2);  // 700;
-	axes[3].max_speed = degPerSecToUsecPerStep(110.0, 3); // 700;
-	axes[4].max_speed = degPerSecToUsecPerStep(90.0, 4);  // 600;
-	axes[5].max_speed = degPerSecToUsecPerStep(90.0, 5);  // 5800;
-														  // can be cleaned up, but for now I'm leaving it like this
-	
-	axes[0].max_velocity = 80.0;  // 500;
-	axes[1].max_velocity = 40.0;	  // 800;
-	axes[2].max_velocity = 60.0;  // 700;
-	axes[3].max_velocity = 110.0; // 700;
-	axes[4].max_velocity = 90.0;  // 600;
-	axes[5].max_velocity = 90.0;  // 5800;
-	
+	axes[0].max_speed = degPerSecToUsecPerStep(80.0, 0);  
+	axes[1].max_speed = degPerSecToUsecPerStep(40.0, 1);
+	axes[2].max_speed = degPerSecToUsecPerStep(60.0, 2);
+	axes[3].max_speed = degPerSecToUsecPerStep(110.0, 3);
+	axes[4].max_speed = degPerSecToUsecPerStep(90.0, 4);
+	axes[5].max_speed = degPerSecToUsecPerStep(90.0, 5);
+	axes[6].max_speed = degPerSecToUsecPerStep(90.0, 5); // Example value
+
+	axes[0].max_velocity = 80.0;
+	axes[1].max_velocity = 40.0;
+	axes[2].max_velocity = 60.0;
+	axes[3].max_velocity = 110.0;
+	axes[4].max_velocity = 90.0;
+	axes[5].max_velocity = 90.0;
+	axes[6].max_velocity = 90.0; // Example value
+
 	axes[0].home_speed = degPerSecToUsecPerStep(20.0, 0);
 	axes[1].home_speed = degPerSecToUsecPerStep(14.0, 1);
 	axes[2].home_speed = degPerSecToUsecPerStep(20.0, 2);
 	axes[3].home_speed = degPerSecToUsecPerStep(20.0, 3);
 	axes[4].home_speed = degPerSecToUsecPerStep(40.0, 4);
 	axes[5].home_speed = degPerSecToUsecPerStep(20.0, 5);
+	axes[6].home_speed = degPerSecToUsecPerStep(20.0, 5); // Example value
 
 	axes[0].home_velocity = 15.0;
 	axes[1].home_velocity = 10.0;
@@ -1560,6 +1588,7 @@ int main(void)
 	axes[3].home_velocity = 15.0;
 	axes[4].home_velocity = 10.0;
 	axes[5].home_velocity = 50.0;
+	axes[6].home_velocity = 50.0; // Example value
 
 	axes[0].max_start_speed = degPerSecToUsecPerStep(3.0, 0);
 	axes[1].max_start_speed = degPerSecToUsecPerStep(3.0, 1);
@@ -1567,30 +1596,31 @@ int main(void)
 	axes[3].max_start_speed = degPerSecToUsecPerStep(3.0, 3);
 	axes[4].max_start_speed = degPerSecToUsecPerStep(3.0, 4);
 	axes[5].max_start_speed = degPerSecToUsecPerStep(3.0, 5);
+	axes[6].max_start_speed = degPerSecToUsecPerStep(3.0, 5); // Example value
 
-	// 1 or 0 for dir setting
-	//CHange both? what the fuck is this codE? - Rowan july 5th
 	axes[0].home_dir = 1;
 	axes[1].home_dir = 1;
 	axes[2].home_dir = 1;
 	axes[3].home_dir = 0;
-	axes[4].home_dir = 1; //CHANGED FROM 0 to 1
+	axes[4].home_dir = 1;
 	axes[5].home_dir = 1;
-	
+	axes[6].home_dir = 1; // Example value
+
 	axes[0].home_dir_vel = 1;
 	axes[1].home_dir_vel = 1;
 	axes[2].home_dir_vel = 1;
 	axes[3].home_dir_vel = -1;
 	axes[4].home_dir_vel = -1;
 	axes[5].home_dir_vel = 1;
+	axes[6].home_dir_vel = 1; // Example value
 
-	//accellerations
 	axes[0].current_accel = degPerSecToUsecPerStep(13.0, 0);
 	axes[1].current_accel = degPerSecToUsecPerStep(10.0, 1);
 	axes[2].current_accel = degPerSecToUsecPerStep(10.0, 2);
 	axes[3].current_accel = degPerSecToUsecPerStep(15.0, 3);
 	axes[4].current_accel = degPerSecToUsecPerStep(15.0, 4);
 	axes[5].current_accel = degPerSecToUsecPerStep(1.0, 5);
+	axes[6].current_accel = degPerSecToUsecPerStep(1.0, 5); // Example value
 
 	axes[0].accel_slope = 2;
 	axes[1].accel_slope = 1;
@@ -1598,20 +1628,23 @@ int main(void)
 	axes[3].accel_slope = 2;
 	axes[4].accel_slope = 2;
 	axes[5].accel_slope = 2;
-	
+	axes[6].accel_slope = 2; // Example value
+
 	axes[0].decel_min_steps = angleToSteps(3.0, 0);
 	axes[1].decel_min_steps = angleToSteps(3.0, 1);
 	axes[2].decel_min_steps = angleToSteps(3.0, 2);
 	axes[3].decel_min_steps = angleToSteps(3.0, 3);
 	axes[4].decel_min_steps = angleToSteps(3.0, 4);
 	axes[5].decel_min_steps = angleToSteps(3.0, 5);
+	axes[6].decel_min_steps = angleToSteps(3.0, 5); // Example value
 
 	axes[0].max_step_pos = angleToSteps(180.0, 0) - POSITION_STEP_LIMIT_THRESHOLD;
-	axes[1].max_step_pos = angleToSteps(180.0, 1) - POSITION_STEP_LIMIT_THRESHOLD; //TODO: WARN DANGER 
+	axes[1].max_step_pos = angleToSteps(180.0, 1) - POSITION_STEP_LIMIT_THRESHOLD;
 	axes[2].max_step_pos = angleToSteps(140.0, 2) - POSITION_STEP_LIMIT_THRESHOLD;
 	axes[3].max_step_pos = angleToSteps(180.0, 3) - POSITION_STEP_LIMIT_THRESHOLD;
 	axes[4].max_step_pos = angleToSteps(180.0, 4) - POSITION_STEP_LIMIT_THRESHOLD;
-	axes[5].max_step_pos = angleToSteps(99999.0, 5) - POSITION_STEP_LIMIT_THRESHOLD;
+	axes[5].max_step_pos = angleToSteps(9999.0, 5) - POSITION_STEP_LIMIT_THRESHOLD;
+	axes[6].max_step_pos = angleToSteps(9999.0, 5) - POSITION_STEP_LIMIT_THRESHOLD; // Example value
 
 	for (int i = 0; i < NUM_AXES; i++)
 	{
@@ -1621,9 +1654,8 @@ int main(void)
 		axes[i].current_velocity = 00.00;
 		axes[i].zero_speed = degPerSecToUsecPerStep(0.01, i);
 		axes[i].current_speed = axes[i].max_start_speed;
-		k_timer_init(&axes[i].stepper_timer, stepper_timer_callback, NULL); // pass user data to callback
-		k_timer_init(&axes[i].accel_timer, accelTimer_callback, NULL);		// pass user data to callback
-
+		k_timer_init(&axes[i].stepper_timer, stepper_timer_callback, NULL);
+		k_timer_init(&axes[i].accel_timer, accelTimer_callback, NULL);
 	}
 
 	axes[0].preset_step_pos[DEFAULT_POSITION] = angleToSteps(60.0, 0);
@@ -1632,6 +1664,7 @@ int main(void)
 	axes[3].preset_step_pos[DEFAULT_POSITION] = angleToSteps(110.0, 3);
 	axes[4].preset_step_pos[DEFAULT_POSITION] = angleToSteps(127.5, 4);
 	axes[5].preset_step_pos[DEFAULT_POSITION] = angleToSteps(15.0, 5);
+	axes[6].preset_step_pos[DEFAULT_POSITION] = angleToSteps(15.0, 5); // Example value
 
 	k_timer_init(&comm_timer, comm_timer_callback, NULL);							// pass user data to callback
 	k_timer_init(&home_timer, home_timer_callback, NULL);							// pass user data to callback
