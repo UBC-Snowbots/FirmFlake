@@ -117,7 +117,7 @@ inline int arpo = 0;
 
 // limit switch pins
 // inline int limPins[6] = {18, 19, 20, 21, 23, 22};
-inline int limGPIO_PIN[NUM_AXES][2] = {{1,17}, {1,16}, {1,26}, {1,27}, {1,25}, {1,24}, {4, 8}};
+inline int limGPIO_PIN[NUM_AXES][2] = {{1,17}, {1,16}, {1,26}, {1,27}, {1,25}, {1,24}, {1, 25}}; //4,8
 
 // pulses per revolution for motors
 inline int ppr[NUM_AXES] = {400, 400, 400, 400, 400, 400, 400};
