@@ -1,0 +1,4 @@
+west:
+  command: /home/rowan/.local/bin/west build -p -b teensy41
+  topdir: /home/rowan/zephyrproject
+  version: 1.2.0
