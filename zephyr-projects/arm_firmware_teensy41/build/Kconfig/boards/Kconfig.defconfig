@@ -1,0 +1,2 @@
+# Load Zephyr board defconfig descriptions.
+osource "/home/rowan/zephyrproject/zephyr/boards/pjrc/teensy4/Kconfig.defconfig"

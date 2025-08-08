@@ -1,0 +1,54 @@
+cmake:
+  application:
+    configuration-dir: /home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41
+    source-dir: /home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41
+  board:
+    name: teensy41
+    qualifiers: mimxrt1062
+    revision: 
+  devicetree:
+    bindings-dirs:
+     - /home/rowan/zephyrproject/zephyr/dts/bindings
+    files:
+     - /home/rowan/zephyrproject/zephyr/boards/pjrc/teensy4/teensy41.dts
+     - /home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41/app.overlay
+    include-dirs:
+     - /home/rowan/zephyrproject/modules/hal/atmel/include
+     - /home/rowan/zephyrproject/modules/hal/gigadevice/include
+     - /home/rowan/zephyrproject/modules/hal/microchip/dts
+     - /home/rowan/zephyrproject/modules/hal/nuvoton/dts
+     - /home/rowan/zephyrproject/modules/hal/nxp/dts
+     - /home/rowan/zephyrproject/modules/hal/stm32/dts
+     - /home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41/include
+     - /home/rowan/zephyrproject/zephyr/include
+     - /home/rowan/zephyrproject/zephyr/include/zephyr
+     - /home/rowan/zephyrproject/zephyr/dts/common
+     - /home/rowan/zephyrproject/zephyr/dts/x86
+     - /home/rowan/zephyrproject/zephyr/dts/xtensa
+     - /home/rowan/zephyrproject/zephyr/dts/sparc
+     - /home/rowan/zephyrproject/zephyr/dts/riscv
+     - /home/rowan/zephyrproject/zephyr/dts/posix
+     - /home/rowan/zephyrproject/zephyr/dts/nios2
+     - /home/rowan/zephyrproject/zephyr/dts/arm64
+     - /home/rowan/zephyrproject/zephyr/dts/arm
+     - /home/rowan/zephyrproject/zephyr/dts/arc
+     - /home/rowan/zephyrproject/zephyr/dts
+    user-files:
+     - /home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41/app.overlay
+  kconfig:
+    files:
+     - /home/rowan/zephyrproject/zephyr/boards/pjrc/teensy4/teensy41_defconfig
+     - /home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41/prj.conf
+    user-files:
+     - /home/rowan/FirmFlake/zephyr-projects/arm_firmware_teensy41/prj.conf
+  toolchain:
+    name: zephyr
+    path: /home/rowan/zephyr-sdk-0.17.0
+  zephyr:
+    version: 4.0.0-rc2
+    zephyr-base: /home/rowan/zephyrproject/zephyr
+version: 0.1.0
+west:
+  command: /home/rowan/.local/bin/west build -p auto -b teensy41
+  topdir: /home/rowan/zephyrproject
+  version: 1.2.0

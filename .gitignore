@@ -99,7 +99,8 @@ StyleCopReport.xml
 *.scc
 
 #zephyr stuff
-**/build/*
+#**/build/*
+#NO KEEP BUILD IN 
 
 # Chutzpah Test files
 _Chutzpah*
