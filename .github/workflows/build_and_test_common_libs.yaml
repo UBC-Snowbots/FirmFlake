@@ -1,0 +1,16 @@
+name: Build and Test common libraries
+on: push
+jobs:
+  setup_and_build_check:
+    runs-on: ubuntu-22.04
+    steps:
+     - name: checkout repo with submoudles 
+       uses: actions/checkout@v4
+       with:
+        submodules: true          # clone submodules recursively
+        fetch-depth: 0            # ensures full history (optional but good practice)
+     - name: build + test
+       run: |
+        cd common_libraries/
+        make test
+        
