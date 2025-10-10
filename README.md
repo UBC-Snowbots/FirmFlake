@@ -5,7 +5,32 @@ This contains all our firmware and embedded code. From both elec and software.
 
 Some build code is committed, which will likely change soon. But we don't have a setup script for zephyr, and use teensy tools to flash our old arm, so by having build code, we don't need to install zephyr on all our computers.
 
-### CONTRIBUTING
+
+## Setup
+
+### Install CMake
+
+This is a tool used to run scripts (e.g. setup scripts).
+
+#### Mac
+```bash
+brew install cmake
+cd common_libs/
+make build
+```
+
+#### Linux / WSL
+```bash
+sudo apt-get install cmake
+cd common_libs/
+make build
+```
+
+### Install Zephyr
+
+Follow setup instructions [here](https://docs.zephyrproject.org/latest/develop/getting_started/index.html).
+
+### Contributing
 Currently, we protect main branch by PR approval and an automated test of our common libraries.
 More automated tests will follow.
 
