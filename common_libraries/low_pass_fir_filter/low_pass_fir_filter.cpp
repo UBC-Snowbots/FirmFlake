@@ -25,8 +25,11 @@ unsigned int LowPassFIRFilter::update(unsigned int input) {
         return this->output = input;
     }
 
+    // `input` is the new data point that is begin added. `buffer[buffer_index]` is the old data point that must be removed. 
     this->output = this->output + input * this->coefficient - this->buffer[this->buffer_index] * this->coefficient;
     this->buffer[this->buffer_index] = input;
+
+    // the index must wrap around once it reaches the right most side of the buffer. Note that buffer size is order + 1.
     this->buffer_index = (this->buffer_index + 1) % (this->order + 1);
 
     return this->output;
