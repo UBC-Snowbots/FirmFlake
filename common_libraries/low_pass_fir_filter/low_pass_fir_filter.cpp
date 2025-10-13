@@ -1,0 +1,33 @@
+#include "low_pass_fir_filter.hpp"
+#include <stdexcept>
+#include <string>
+#include <iostream>
+
+LowPassFIRFilter::LowPassFIRFilter() : LowPassFIRFilter(1) {}
+
+LowPassFIRFilter::LowPassFIRFilter(unsigned int order)
+    : buffer_is_empty(true), buffer(), buffer_index(0), order(order),
+    coefficient(1.0f / (order + 1)), output(0) {
+    // Valid input check
+    if (order < 1 || order > MAX_LP_FIR_ORDER) {
+        throw std::invalid_argument("order must be at least 1 and less than " +
+            std::to_string(MAX_LP_FIR_ORDER));
+    }
+}
+
+unsigned int LowPassFIRFilter::update(unsigned int input) {
+    if (this->buffer_is_empty) {
+        // fill entire buffer with the first input
+        for (int i = 0; i < this->order + 1; i++) {
+            this->buffer[i] = input;
+        }
+        this->buffer_is_empty = false;
+        return this->output = input;
+    }
+
+    this->output = this->output + input * this->coefficient - this->buffer[this->buffer_index] * this->coefficient;
+    this->buffer[this->buffer_index] = input;
+    this->buffer_index = (this->buffer_index + 1) % (this->order + 1);
+
+    return this->output;
+}
