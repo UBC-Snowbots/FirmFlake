@@ -1,7 +1,6 @@
 #include "low_pass_fir_filter.hpp"
 #include <stdexcept>
-#include <string>
-#include <iostream>
+#include <cstdio>
 
 LowPassFIRFilter::LowPassFIRFilter() : LowPassFIRFilter(1) {}
 
@@ -10,8 +9,7 @@ LowPassFIRFilter::LowPassFIRFilter(unsigned int order)
     coefficient(1.0f / (order + 1)), output(0) {
     // Valid input check
     if (order < 1 || order > MAX_LP_FIR_ORDER) {
-        throw std::invalid_argument("order must be at least 1 and less than " +
-            std::to_string(MAX_LP_FIR_ORDER));
+        throw std::invalid_argument("order must be at least 1 and less than the max order");
     }
 }
 
