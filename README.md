@@ -8,6 +8,11 @@ Some build code is committed, which will likely change soon. But we don't have a
 
 ## Setup
 
+### Clone the repository
+```bash
+git clone --recurse-submodules https://github.com/UBC-Snowbots/FirmFlake.git
+```
+
 ### Install CMake
 
 This is a tool used to run scripts (e.g. setup scripts).
