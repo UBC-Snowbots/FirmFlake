@@ -16,9 +16,11 @@ We have some zephyr rtos projects under zephyr_projects. To build/develop them y
 ### Arduino
 We have some arduino projects, under arduino_firmware.
 
-### common libraries
-Under common_libs/ we have our common libraries. These should be hardware agnostic, modular and testable.
+### Common Libraries
+Under common_libraries/ we have our common libraries. These should be hardware agnostic, modular and testable.
 We have an example here, that shows the general workflow for creating a common library module, including Catch2 testing.
+
+1. [Low pass FIR filter](common_libraries/low_pass_fir_filter/README.md)
 
 ### Testing
 We use Catch2 for testing cpp and c code. It's an easy to use, and easy to integrate tool for cpp unit tests.
