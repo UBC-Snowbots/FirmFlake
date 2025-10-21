@@ -89,7 +89,7 @@ int main(void)
 
       
 
-        k_sleep(K_MSEC(500));  // Adjust the delay as needed
+        k_sleep(K_MSEC(100));  // Adjust the delay as needed
     }
 }
 
