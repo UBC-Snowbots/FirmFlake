@@ -30,15 +30,15 @@ make build
 
 Follow setup instructions [here](https://docs.zephyrproject.org/latest/develop/getting_started/index.html).
 
-### Contributing
+## Contributing
 Currently, we protect main branch by PR approval and an automated test of our common libraries.
 More automated tests will follow.
 
 
-### ZephyrRTOS
+## ZephyrRTOS
 We have some zephyr rtos projects under zephyr_projects. To build/develop them you will need to install zephyr: https://docs.zephyrproject.org/latest/develop/getting_started/index.html
 
-### Arduino
+## Arduino
 We have some arduino projects, under arduino_firmware.
 
 ### Common Libraries
@@ -47,7 +47,7 @@ We have an example here, that shows the general workflow for creating a common l
 
 1. [Low pass FIR filter](common_libraries/low_pass_fir_filter/README.md)
 
-### Testing
+## Testing
 We use Catch2 for testing cpp and c code. It's an easy to use, and easy to integrate tool for cpp unit tests.
 Ideally, all our code has test coverage. Test driven development (TDD) is a powerful process where if done perfectly, you never push a bug that would impact system operations, because your tests would cover every needed operation of the system.
 
@@ -57,8 +57,14 @@ Catch2 docs are in it's readme: https://github.com/catchorg/Catch2?tab=readme-ov
 
 A good book on TDD is Test Driven Development for Embedded Systems: https://pragprog.com/titles/jgade/test-driven-development-for-embedded-c/
 
+For example, to test the common libraries, do:
+```bash
+cd common_libraries/
+make test
+```
+
 ### ROS2 Tests
 We have some ros2 code in here, specifically for testing firmware. Might be moved to RoverFlake2 in the future.
 
-### End Notes
+## End Notes
 The filestructure is currently based around development enviroments, we may change this to project based structure in the future.
