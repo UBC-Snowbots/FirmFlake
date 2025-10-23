@@ -7,7 +7,7 @@ project(common_lib_tests)
 set(CMAKE_CXX_STANDARD 17) # cpp 2017 standard
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../external_libs/Catch2 ${CMAKE_CURRENT_BINARY_DIR}/external_libs/Catch2) # Include Catch2 for unit tests
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../submodules/Catch2 ${CMAKE_CURRENT_BINARY_DIR}/submodules/Catch2) # Include Catch2 for unit tests
 
 set(BUILD_DIR ${CMAKE_CURRENT_LIST_DIR}/build)
 
