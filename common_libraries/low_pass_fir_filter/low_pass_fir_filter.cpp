@@ -1,4 +1,4 @@
-#include "low_pass_fir_filter.hpp"
+#include "low_pass_fir_filter.h"
 #include <stdexcept>
 #include <cstdio>
 

@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN // Let catch2 handle the main function and boiler plate code.
 #include <catch2/catch_all.hpp>
-#include <low_pass_fir_filter.hpp>
+#include <low_pass_fir_filter.h>
 
 
 TEST_CASE("test_constructor")
