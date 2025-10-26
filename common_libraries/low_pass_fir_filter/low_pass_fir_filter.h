@@ -1,6 +1,5 @@
 #ifndef FIR_FILTER_HPP
 #define FIR_FILTER_HPP
-#define MAX_LP_FIR_ORDER (10)
 
 /*
 This class is used to apply a low pass FIR filter to a stream of inputs with a specific order. This filter is simply taking S=[ current_input, previous_input_1, previous_input_2, ... , previous_input_{order} ], and returning the average.
@@ -22,8 +21,8 @@ private:
 public:
     LowPassFIRFilter() {
         // Valid input check
-        if (order < 1 || order > MAX_LP_FIR_ORDER) {
-            throw std::invalid_argument("order must be at least 1 and less than the max order");
+        if (order < 1) {
+            throw std::invalid_argument("order must be at least 1");
         }
     };
 

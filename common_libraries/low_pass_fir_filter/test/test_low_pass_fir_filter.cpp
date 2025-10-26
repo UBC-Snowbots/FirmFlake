@@ -29,14 +29,14 @@ TEST_CASE("test_constructor")
         LowPassFIRFilter<5> filter_instance_5;
         REQUIRE(filter_instance_5.getOrder() == 5);
 
-        LowPassFIRFilter<MAX_LP_FIR_ORDER> filter_instance_10;
-        REQUIRE(filter_instance_10.getOrder() == MAX_LP_FIR_ORDER);
+        LowPassFIRFilter<10> filter_instance_10;
+        REQUIRE(filter_instance_10.getOrder() == 10);
     }
 
     SECTION("test_order_too_low_or_too_high")
     {
+        REQUIRE_THROWS_AS(LowPassFIRFilter<-1>(), std::invalid_argument);
         REQUIRE_THROWS_AS(LowPassFIRFilter<0>(), std::invalid_argument);
-        REQUIRE_THROWS_AS(LowPassFIRFilter<MAX_LP_FIR_ORDER + 1>(), std::invalid_argument);
     }
 
 }
