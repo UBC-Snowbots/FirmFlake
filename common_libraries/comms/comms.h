@@ -59,7 +59,7 @@ typedef struct {
 typedef struct {
     uint8_t led_panel_index;
     float panel_percent;
-    bool is_response = false; // A response is the LED controller responding with the currently set value
+    bool is_response; // A response is the LED controller responding with the currently set value
 } LedPanelCMD_t;
 
 typedef struct {
