@@ -39,8 +39,8 @@ HAL_StatusTypeDef CAN_Transmit_LoadCells(int32_t raw1, int32_t raw2)
     hdr.TxFrameType         = FDCAN_DATA_FRAME;
     hdr.DataLength          = FDCAN_DLC_BYTES_8;
     hdr.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-    hdr.BitRateSwitch       = FDCAN_BRS_OFF;
-    hdr.FDFormat            = FDCAN_CLASSIC_CAN;
+    hdr.BitRateSwitch       = FDCAN_BRS_ON;
+    hdr.FDFormat            = FDCAN_FD_CAN;
     hdr.TxEventFifoControl  = FDCAN_NO_TX_EVENTS;
     hdr.MessageMarker       = 0;
 
