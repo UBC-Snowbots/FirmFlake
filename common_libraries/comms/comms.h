@@ -108,6 +108,9 @@ typedef enum {
     NUM_MSG_TYPES
 } msg_type_t;
 
+uint32_t pack_id(uint16_t device_id, uint16_t type);
+uint16_t id_device(uint32_t id);
+uint16_t id_type(uint32_t id);
 
 void     comms_set_device_id(uint16_t device_id);
 uint16_t comms_get_device_id(void);
@@ -122,6 +125,8 @@ bool convert_to_raw  (const encoded_msg_t* in, uint8_t* raw_out);
 bool convert_from_raw(const uint8_t* raw_in, encoded_msg_t* out);
 bool len_to_dlc(const uint8_t len, uint32_t* dlc_out);
 bool dlc_to_len(const uint32_t dlc, uint8_t* len_out);
+
+
 
 #ifdef __cplusplus
 }

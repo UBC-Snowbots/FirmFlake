@@ -67,16 +67,16 @@ void comms_set_device_id(uint16_t device_id) { s_device_id = device_id & COMMS_D
 uint16_t comms_get_device_id(void)           { return s_device_id; }
  
 // ---- id pack/unpack ---------------------------------------------------------
-static inline uint32_t pack_id(uint16_t device_id, uint16_t type)
+uint32_t pack_id(uint16_t device_id, uint16_t type)
 {
     return (((uint32_t)(device_id & COMMS_DEVICE_ID_MASK)) << COMMS_DEVICE_ID_SHIFT)
          | ((uint32_t)type & COMMS_MSG_ID_MASK);
 }
-static inline uint16_t id_device(uint32_t id)
+uint16_t id_device(uint32_t id)
 {
     return (uint16_t)((id >> COMMS_DEVICE_ID_SHIFT) & COMMS_DEVICE_ID_MASK);
 }
-static inline uint16_t id_type(uint32_t id)
+uint16_t id_type(uint32_t id)
 {
     return (uint16_t)(id & COMMS_MSG_ID_MASK);
 }
