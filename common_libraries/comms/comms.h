@@ -63,6 +63,11 @@ typedef struct {
 } LedPanelCMD_t;
 
 typedef struct {
+    uint8_t led_panel_index;
+    float panel_percent;
+} LedPanelFeedback_t;
+
+typedef struct {
     uint8_t error_type;
     uint8_t info;
 } HardwareError_t;
@@ -72,6 +77,7 @@ typedef union {
     Ping_t          ping;
     HeartBeat_t     heartbeat;
     LedPanelCMD_t   led_panel_cmd;
+    LedPanelFeedback_t led_panel_feedback;
     HardwareError_t     hardware_error;
 } Payload_t;
 
@@ -105,6 +111,7 @@ typedef enum {
     MSG_TYPE__HEARTBEAT,
     MSG_TYPE__SET_LED_PWM,
     MSG_TYPE__HARDWARE_ERROR, // Not really used rn
+    MSG_TYPE__LED_PANEL_FEEDBACK,
     NUM_MSG_TYPES
 } msg_type_t;
 

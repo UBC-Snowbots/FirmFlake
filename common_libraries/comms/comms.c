@@ -91,6 +91,7 @@ static size_t expected_payload_len(uint16_t type)
         case MSG_TYPE__HEARTBEAT:                           return 4u;
         case MSG_TYPE__SET_LED_PWM:                         return sizeof(uint8_t) + sizeof(float); // 5
         case MSG_TYPE__HARDWARE_ERROR:                      return 2u;
+        case MSG_TYPE__LED_PANEL_FEEDBACK:                  return sizeof(uint8_t) + sizeof(float);
         default:                                            return SIZE_MAX; 
     }
 }
@@ -127,6 +128,10 @@ static size_t pack_payload(const msg_t* msg, uint8_t* out, size_t cap)
         PACK(out, pos, msg->payload.led_panel_cmd.panel_percent);
         break;
     }
+    case MSG_TYPE__LED_PANEL_FEEDBACK:
+        PACK(out, pos, msg->payload.led_panel_feedback.led_panel_index);
+        PACK(out, pos, msg->payload.led_panel_feedback.panel_percent);
+        break;
     case MSG_TYPE__HARDWARE_ERROR:
         PACK(out, pos, msg->payload.hardware_error.error_type);
         PACK(out, pos, msg->payload.hardware_error.info);
@@ -151,6 +156,10 @@ static bool unpack_payload(msg_t* msg, const uint8_t* in, size_t len)
     case MSG_TYPE__SET_LED_PWM:
         UNPACK(in, pos, msg->payload.led_panel_cmd.led_panel_index);
         UNPACK(in, pos, msg->payload.led_panel_cmd.panel_percent);
+        break;
+    case MSG_TYPE__LED_PANEL_FEEDBACK:
+        UNPACK(in, pos, msg->payload.led_panel_feedback.led_panel_index);
+        UNPACK(in, pos, msg->payload.led_panel_feedback.panel_percent);
         break;
     case MSG_TYPE__HARDWARE_ERROR:
         UNPACK(in, pos, msg->payload.hardware_error.error_type);
