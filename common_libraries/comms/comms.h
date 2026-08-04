@@ -72,6 +72,17 @@ typedef struct {
     uint8_t info;
 } HardwareError_t;
 
+typedef struct {
+    float vel_tilt;
+    float vel_pan;
+    // Thats all we got rn, open loop control
+} PTZVelCmd_t;
+
+typedef struct {
+    float curr_vel_tilt;
+    float curr_vel_pan;
+    // Thats all we got rn, open loop control
+} PTZFeedback_t;
 
 typedef union {
     Ping_t          ping;
@@ -79,6 +90,8 @@ typedef union {
     LedPanelCMD_t   led_panel_cmd;
     LedPanelFeedback_t led_panel_feedback;
     HardwareError_t     hardware_error;
+    PTZVelCmd_t         ptz_vel_cmd;
+    PTZFeedback_t       ptz_feedback;
 } Payload_t;
 
 // C friendly comms helper functions
@@ -112,6 +125,8 @@ typedef enum {
     MSG_TYPE__SET_LED_PWM,
     MSG_TYPE__HARDWARE_ERROR, // Not really used rn
     MSG_TYPE__LED_PANEL_FEEDBACK,
+    MSG_TYPE__PTZ_VEL_CMD,
+    MSG_TYPE__PTZ_FEEDBACK,
     NUM_MSG_TYPES
 } msg_type_t;
 
