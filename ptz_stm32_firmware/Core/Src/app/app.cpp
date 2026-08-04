@@ -11,6 +11,7 @@ void App::main(void)
     {
         // poll comms?
         run_state_machine();
+        handle_ptz_timeout();   // runs in every state, not just IDLE
         // usr_leds.update();
         handle_heartbeat(); // Send heartbeat at regular intervals
     }
@@ -51,9 +52,20 @@ void App::poll_can()
                 ptz_feedback_msg.payload.ptz_feedback.curr_vel_pan = msg.payload.ptz_vel_cmd.vel_pan;
                 ptz_feedback_msg.payload.ptz_feedback.curr_vel_tilt = msg.payload.ptz_vel_cmd.vel_tilt;
                 send_msg(ptz_feedback_msg);
+                ptz_cmd_timer.set(PTZ_CMD_TIMEOUT_MS);                 // pet the watchdog
             }
             break;
     }
+}
+
+void App::handle_ptz_timeout(void)
+{
+    if(!ptz_cmd_timer.expired()) return;
+
+    // Comms lost or commander stopped talking -> fail safe to stopped
+    ptz_cmd_timer.disable();  // one-shot; re-armed by the next PTZ cmd
+    servo_pan.set_speed(0.0f);
+    servo_tilt.set_speed(0.0f);
 }
 
 // Run based on current state
@@ -152,6 +164,11 @@ void App::run_INIT(void)
         return;
     }
     if(heartbeat_timer.init() != true)
+    {
+        handle_app_error(AppStatus::NOT_OK);
+        return;
+    }
+    if(ptz_cmd_timer.init() != true)
     {
         handle_app_error(AppStatus::NOT_OK);
         return;

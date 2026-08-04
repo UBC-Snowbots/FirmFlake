@@ -14,6 +14,7 @@ static_assert((this_device_id) > 0x000F, "this_device_id is invalid. 0x0000 to 0
 
 #define HEARTBEAT_PERIOD_MS 1000u
 #define SENSOR_UPDATE_PERIOD_MS 1000u
+static constexpr uint32_t PTZ_CMD_TIMEOUT_MS = 250;  // ~5 missed cmds @ 20Hz
 
 enum class AppState 
 {
@@ -39,23 +40,25 @@ enum class AppStatus
 class App {
 public:    
     App(ClockInterface& clock, ServoInterface& servo_tilt, ServoInterface& servo_pan, CanInterface& can)
-    : substate_timer(Timer(clock, false)), heartbeat_timer(Timer(clock, true)), sensor_read_and_send_timer(Timer(clock, true)), clock(clock), servo_tilt(servo_tilt), servo_pan(servo_pan), can(can) {};
+    : substate_timer(Timer(clock, false)), heartbeat_timer(Timer(clock, true)), sensor_read_and_send_timer(Timer(clock)), ptz_cmd_timer(Timer(clock)),  clock(clock), servo_tilt(servo_tilt), servo_pan(servo_pan), can(can) {};
 
     void main(void);
 private:
     Timer substate_timer;
     Timer heartbeat_timer;
     Timer sensor_read_and_send_timer;
+    Timer ptz_cmd_timer;
     ClockInterface& clock;
     ServoInterface& servo_tilt;
     ServoInterface& servo_pan;
     CanInterface& can;
-
+    
     AppState current_state;
     uint32_t current_substate;
-
+    
     bool go_to_state(AppState next_state);
     void handle_app_error(AppStatus error_or_status, msg_t error_msg = {});
+    void handle_ptz_timeout(void);
 
     //Communication helpers
     void send_msg(const msg_t &msg);
