@@ -92,6 +92,8 @@ static size_t expected_payload_len(uint16_t type)
         case MSG_TYPE__SET_LED_PWM:                         return sizeof(uint8_t) + sizeof(float); // 5
         case MSG_TYPE__HARDWARE_ERROR:                      return 2u;
         case MSG_TYPE__LED_PANEL_FEEDBACK:                  return sizeof(uint8_t) + sizeof(float);
+        case MSG_TYPE__PTZ_VEL_CMD:                         return 8u;
+        case MSG_TYPE__PTZ_FEEDBACK:                        return 8u;
         default:                                            return SIZE_MAX; 
     }
 }
@@ -136,6 +138,14 @@ static size_t pack_payload(const msg_t* msg, uint8_t* out, size_t cap)
         PACK(out, pos, msg->payload.hardware_error.error_type);
         PACK(out, pos, msg->payload.hardware_error.info);
         break;
+    case MSG_TYPE__PTZ_VEL_CMD:
+        PACK(out, pos, msg->payload.ptz_vel_cmd.vel_tilt);
+        PACK(out, pos, msg->payload.ptz_vel_cmd.vel_pan);
+        break;
+    case MSG_TYPE__PTZ_FEEDBACK:
+        PACK(out, pos, msg->payload.ptz_feedback.curr_vel_tilt);
+        PACK(out, pos, msg->payload.ptz_feedback.curr_vel_pan);
+        break;
     default:
         return SIZE_MAX; // This is an error
     }
@@ -164,6 +174,14 @@ static bool unpack_payload(msg_t* msg, const uint8_t* in, size_t len)
     case MSG_TYPE__HARDWARE_ERROR:
         UNPACK(in, pos, msg->payload.hardware_error.error_type);
         UNPACK(in, pos, msg->payload.hardware_error.info);
+        break;
+    case MSG_TYPE__PTZ_VEL_CMD:
+        UNPACK(in, pos, msg->payload.ptz_vel_cmd.vel_tilt);
+        UNPACK(in, pos, msg->payload.ptz_vel_cmd.vel_pan);
+        break;
+    case MSG_TYPE__PTZ_FEEDBACK:
+        UNPACK(in, pos, msg->payload.ptz_feedback.curr_vel_tilt);
+        UNPACK(in, pos, msg->payload.ptz_feedback.curr_vel_pan);
         break;
     default:
         return false;
