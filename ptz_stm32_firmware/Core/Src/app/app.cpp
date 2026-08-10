@@ -45,8 +45,9 @@ void App::poll_can()
         case MSG_TYPE__PTZ_VEL_CMD:
             // handle_ptz_vel_cmd(msg.payload)
             {
-                servo_tilt.set_speed(msg.payload.ptz_vel_cmd.vel_tilt);
-                servo_tilt.set_speed(msg.payload.ptz_vel_cmd.vel_pan);
+                float TILT_INERTIA_COMP = -15;
+                servo_tilt.set_speed(msg.payload.ptz_vel_cmd.vel_tilt + TILT_INERTIA_COMP);
+                servo_pan.set_speed(msg.payload.ptz_vel_cmd.vel_pan);
                 msg_t ptz_feedback_msg;
                 ptz_feedback_msg.type = MSG_TYPE__PTZ_FEEDBACK;
                 ptz_feedback_msg.payload.ptz_feedback.curr_vel_pan = msg.payload.ptz_vel_cmd.vel_pan;
@@ -60,12 +61,12 @@ void App::poll_can()
 
 void App::handle_ptz_timeout(void)
 {
-    if(!ptz_cmd_timer.expired()) return;
+    // if(!ptz_cmd_timer.expired()) return;
 
-    // Comms lost or commander stopped talking -> fail safe to stopped
-    ptz_cmd_timer.disable();  // one-shot; re-armed by the next PTZ cmd
-    servo_pan.set_speed(0.0f);
-    servo_tilt.set_speed(0.0f);
+    // // Comms lost or commander stopped talking -> fail safe to stopped
+    // ptz_cmd_timer.disable();  // one-shot; re-armed by the next PTZ cmd
+    // servo_pan.set_speed(0.0f);
+    // servo_tilt.set_speed(0.0f);
 }
 
 // Run based on current state
@@ -86,7 +87,7 @@ void App::run_state_machine(void)
     case IDLE:
         poll_can(); // poll can on idle
         // handle_sending_light_readings();
-        // servo_tilt.set_speed(-100.0);
+        // servo_tilt.set_speed(-45.0);
         break;
     default:
         break;

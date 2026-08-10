@@ -11,8 +11,8 @@ namespace pindefs
     // Silicone specific pins and hardware
 
     // PWM PINS FOR LED PANELS
-    static const ServoHardware_t servo_tilt_hw = {GPIOA, GPIO_PIN_6, GPIO_AF2_TIM3, TIM3, TIM_CHANNEL_1};
-    static const ServoHardware_t servo_pan_hw = {GPIOA, GPIO_PIN_7, GPIO_AF2_TIM3, TIM3, TIM_CHANNEL_2};
+    static const ServoHardware_t servo_tilt_hw = {GPIOA, GPIO_PIN_7, GPIO_AF2_TIM3, TIM3, TIM_CHANNEL_2};
+    static const ServoHardware_t servo_pan_hw = {GPIOA, GPIO_PIN_6, GPIO_AF2_TIM3, TIM3, TIM_CHANNEL_1};
  
     // USR LEDS - Turn on when pulled LOW (Active Low)
     // static constexpr uint16_t       USRLED_3_PIN  = GPIO_PIN_10; //10 // Messed up the silkscreen, USRLED_0 is labeled USRLED_3
