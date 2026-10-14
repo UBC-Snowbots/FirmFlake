@@ -42,7 +42,7 @@ this is not easy
 // #define UART_DEV        DT_NODELABEL(lpuart4)
 #define MSG_SIZE 32
 
-#define DEBUG_MSGS true
+#define DEBUG_MSGS false
 
 // general parameters
 #define NUM_AXES 7
@@ -183,7 +183,9 @@ inline struct ring_buf ringbuf;
 inline const struct device *dev;
 //inline char tx_msg[TX_BUF_SIZE];
 
-void sendMsg(const char tx_msg[TX_BUF_SIZE]);
+void sendMsg(const char *tx_msg);
+void sendBytes(const uint8_t *data, size_t len);
+void copyField(char *dst, size_t dst_size, const char *start, const char *end);
 
 //timer callback to handle step signals
 void stepper_timer_callback(struct k_timer *timer_id);
