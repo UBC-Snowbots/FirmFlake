@@ -143,8 +143,8 @@ static void interrupt_handler(const struct device *dev, void *user_data)
 	static size_t cmd_index = 0;
 	uint8_t rx_buffer[RX_BUF_SIZE] = "";
 	int recv_len = 0;
-
-	while (uart_irq_update(dev) && uart_irq_is_pending(dev))
+	uart_irq_update(dev);
+	while (uart_irq_is_pending(dev))
 	{
 		if (uart_irq_rx_ready(dev))
 		{
