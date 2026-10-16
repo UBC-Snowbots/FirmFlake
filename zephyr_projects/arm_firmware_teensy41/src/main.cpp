@@ -135,49 +135,71 @@ static int enable_usb_device_next(void)
 }
 #endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK_NEXT) */
 
+/* RX: the ISR only frames bytes into lines and hands them to cmd_thread via
+ * cmd_msgq. Parsing (atof, sprintf, axis updates) runs in thread context. */
+struct cmd_line
+{
+	uint8_t buf[RX_BUF_SIZE];
+};
+K_MSGQ_DEFINE(cmd_msgq, sizeof(struct cmd_line), 8, 4);
+
+/* TX: ring_buf has no internal locking and is written from timer ISRs, the
+ * cmd thread and main, so every put goes through sendBytes() under this lock. */
+static struct k_spinlock tx_lock;
+static volatile uint32_t tx_dropped_bytes = 0;
+static volatile uint32_t rx_dropped_lines = 0;
+
 static void interrupt_handler(const struct device *dev, void *user_data)
 {
-
 	ARG_UNUSED(user_data);
-	static uint8_t cmd_buffer[RX_BUF_SIZE] = "";
+	static struct cmd_line line;
 	static size_t cmd_index = 0;
-	uint8_t rx_buffer[RX_BUF_SIZE] = "";
+	static bool discarding = false; // set after an overlong line, until next terminator
+	uint8_t rx_buffer[64];
 	int recv_len = 0;
 
-	while (uart_irq_update(dev) && uart_irq_is_pending(dev))
+	// uart_irq_update() returns void since Zephyr v4.5 (commit 0dcf6a345a6); call it before each pending check
+	while (true)
 	{
+		uart_irq_update(dev);
+		if (!uart_irq_is_pending(dev))
+		{
+			break;
+		}
+
 		if (uart_irq_rx_ready(dev))
 		{
-			// k_timer_stop(&pingAnglePosition_timer);
-
 			recv_len = uart_fifo_read(dev, rx_buffer, sizeof(rx_buffer));
-			//  if (recv_len > RX_BUF_SIZE) {
-			// // // Log an error or take corrective action
-			// //sendMsg("Uart Parse Error/Overflow, rejecting message\n");
-			// return;
-			// }
-			for (int i = 0; i < recv_len; i++)
+
+			for (int i = 0; i < recv_len; i++) // process EVERY byte, including any after a terminator
 			{
-				if (cmd_index >= RX_BUF_SIZE - 1)
+				uint8_t c = rx_buffer[i];
+				if (c == '\n' || c == '\r' || c == '\0')
 				{
-					cmd_index = 0; // Reset for next command
-								   // log an error or warning here
-				}
-				if (rx_buffer[i] == '\n' || rx_buffer[i] == '\r' || rx_buffer[i] == '\0') // big error, forgot to put back in the '\r' and '\0', using minicom was all messed as I had '\n' as an endchar disabled??
-				{
-					cmd_buffer[cmd_index] = '\0'; // Null-terminate
-					// double check it wont break everything
-					if (cmd_index < RX_BUF_SIZE)
+					if (!discarding && cmd_index > 0) // ignore empty lines (e.g. the \n of a \r\n pair)
 					{
-						parseCmd(cmd_buffer);
+						line.buf[cmd_index] = '\0';
+						if (k_msgq_put(&cmd_msgq, &line, K_NO_WAIT) != 0)
+						{
+							rx_dropped_lines++;
+						}
 					}
-					cmd_index = 0; // Reset for next command
-					i = recv_len;
+					cmd_index = 0;
+					discarding = false;
+				}
+				else if (discarding)
+				{
+					// drop bytes until the end of the overlong line
+				}
+				else if (cmd_index >= RX_BUF_SIZE - 1)
+				{
+					cmd_index = 0; // overlong line: throw it away entirely
+					discarding = true;
+					rx_dropped_lines++;
 				}
 				else
 				{
-					cmd_buffer[cmd_index++] = rx_buffer[i];
-					// cmd_index++;
+					line.buf[cmd_index++] = c;
 				}
 			}
 		}
@@ -187,10 +209,16 @@ static void interrupt_handler(const struct device *dev, void *user_data)
 			if (uart_irq_tx_complete(dev))
 			{
 				uint8_t buffer[TX_BUF_SIZE];
+				k_spinlock_key_t key = k_spin_lock(&tx_lock);
 				int rb_len = ring_buf_get(&ringbuf, buffer, sizeof(buffer));
+				k_spin_unlock(&tx_lock, key);
 				if (rb_len > 0)
 				{
-					uart_fifo_fill(dev, buffer, rb_len);
+					int sent = uart_fifo_fill(dev, buffer, rb_len);
+					if (sent < rb_len)
+					{
+						tx_dropped_bytes += rb_len - sent;
+					}
 				}
 				else
 				{
@@ -200,6 +228,37 @@ static void interrupt_handler(const struct device *dev, void *user_data)
 		}
 	}
 }
+
+static void cmd_thread_entry(void *p1, void *p2, void *p3)
+{
+	ARG_UNUSED(p1);
+	ARG_UNUSED(p2);
+	ARG_UNUSED(p3);
+	struct cmd_line line;
+	while (true)
+	{
+		// A bit rough, adds a 1 ms sleep
+		if (k_msgq_get(&cmd_msgq, &line, K_FOREVER) != 0)
+		{
+			k_msleep(1); // should never happen; never spin
+			continue;
+		}
+		parseCmd(line.buf);
+	}
+}
+K_THREAD_DEFINE(cmd_thread, 4096, cmd_thread_entry, NULL, NULL, NULL, K_PRIO_PREEMPT(1), 0, K_TICKS_FOREVER);
+
+void copyField(char *dst, size_t dst_size, const char *start, const char *end)
+{
+	size_t n = (size_t)(end - start);
+	if (n >= dst_size)
+	{
+		n = dst_size - 1;
+	}
+	memcpy(dst, start, n);
+	dst[n] = '\0';
+}
+
 // Planning to sepperate steppers and uart into 2 different threads
 // void uart_thread(void *arg1, void *arg2, void *arg3) {
 //     // UART initialization code here
@@ -216,11 +275,21 @@ static void interrupt_handler(const struct device *dev, void *user_data)
 //     }
 // }
 
-void sendMsg(const char tx_msg[TX_BUF_SIZE])
+void sendBytes(const uint8_t *data, size_t len)
 {
-
-	ring_buf_put(&ringbuf, (uint8_t *)tx_msg, strlen(tx_msg));
+	k_spinlock_key_t key = k_spin_lock(&tx_lock);
+	uint32_t put = ring_buf_put(&ringbuf, data, len);
+	k_spin_unlock(&tx_lock, key);
+	if (put < len)
+	{
+		tx_dropped_bytes += len - put; // ring buffer full
+	}
 	uart_irq_tx_enable(dev);
+}
+
+void sendMsg(const char *tx_msg)
+{
+	sendBytes((const uint8_t *)tx_msg, strlen(tx_msg));
 }
 
 void tx_enable_callback(struct k_timer *timer_id)
@@ -230,12 +299,11 @@ void tx_enable_callback(struct k_timer *timer_id)
 void pingStepPosition_timer_callback(struct k_timer *timer_id)
 {
     char msg[TX_BUF_SIZE];
-    sprintf(msg, "$my_stepP(%i, %i, %i, %i, %i, %i, %i)\n\r\0", 
+    sprintf(msg, "$my_stepP(%i, %i, %i, %i, %i, %i, %i)\n", 
             axes[0].step_pos, axes[1].step_pos, axes[2].step_pos, 
             axes[3].step_pos, axes[4].step_pos, axes[5].step_pos, 
             axes[6].step_pos);
-    ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-    uart_irq_tx_enable(dev);
+    sendMsg(msg);
 }
 
 void pingAnglePosition_timer_callback(struct k_timer *timer_id)
@@ -243,18 +311,17 @@ void pingAnglePosition_timer_callback(struct k_timer *timer_id)
     updateAngles();
 
     char msg[TX_BUF_SIZE];
-    sprintf(msg, "$my_angleP(%0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f)\n\r\0", 
+    sprintf(msg, "$my_angleP(%0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f)\n", 
             axes[0].angle_pos, axes[1].angle_pos, axes[2].angle_pos, 
             axes[3].angle_pos, axes[4].angle_pos, axes[5].angle_pos, 
             axes[6].angle_pos);
-    ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-    uart_irq_tx_enable(dev);
+    sendMsg(msg);
 }
 
 void pingSpeed_timer_callback(struct k_timer *timer_id)
 {
     char msg[TX_BUF_SIZE];
-    sprintf(msg, "$my_stepS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n\r\0", 
+    sprintf(msg, "$my_stepS(%d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d, %d->%d)\n", 
             axes[0].current_speed, axes[0].target_speed, 
             axes[1].current_speed, axes[1].target_speed, 
             axes[2].current_speed, axes[2].target_speed, 
@@ -262,8 +329,7 @@ void pingSpeed_timer_callback(struct k_timer *timer_id)
             axes[4].current_speed, axes[4].target_speed, 
             axes[5].current_speed, axes[5].target_speed, 
             axes[6].current_speed, axes[6].target_speed);
-    ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-    uart_irq_tx_enable(dev);
+    sendMsg(msg);
 }
 
 void updateAngles()
@@ -301,7 +367,8 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 	// sendMsg("Command Parsing \n");
 
 
-	if (cmd[0] == '$' && cmd[strlen((char *)cmd) - 1] == ')')
+	size_t len = strlen((char *)cmd);
+	if (len >= 2 && cmd[0] == '$' && cmd[len - 1] == ')')
 	{
 		// Parse the command
 
@@ -343,6 +410,7 @@ void parseCmd(uint8_t cmd[RX_BUF_SIZE])
 			//velocity command, arm should attempt these velocities
 			cmd_type = ABSOLUTE_TARGET_VELOCITY_ID;
 			parseAbsoluteTargetVelocityCmd(cmd);
+			break;
 		case 'w':
 			// debug cmd
 			// stepAxis(arpo);
@@ -494,8 +562,7 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 		while (i < NUM_AXES && (end_ptr = strchr(start_ptr, ',')) != NULL)
 		{
 			char speed_str[10];									// Assume that the float will not exceed 9 characters
-			strncpy(speed_str, start_ptr, end_ptr - start_ptr); // strncpy adds a null terminator, nvm?
-			speed_str[end_ptr - start_ptr] = '\n';				// Null-terminate
+			copyField(speed_str, sizeof(speed_str), start_ptr, end_ptr);
 			axes[i].target_speed = degPerSecToUsecPerStep(atof(speed_str), i);
 			//axes[i].step_des_pos = axes[i].step_pos + angleToSteps(atof(speed_str), i);
 			// if (speed_str[1] == ' ')
@@ -513,8 +580,7 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 			if (end_ptr)
 			{
 				char speed_str[15];
-				strncpy(speed_str, start_ptr, end_ptr - start_ptr); // strncpy adds a null terminator, nvm?
-				speed_str[end_ptr - start_ptr] = '\n';
+				copyField(speed_str, sizeof(speed_str), start_ptr, end_ptr);
 				float velocity = atof(speed_str);
 				axes[i].target_speed = degPerSecToUsecPerStep(velocity, i);
 				// if(velocity > 0.0){
@@ -532,10 +598,9 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 			char msg[TX_BUF_SIZE];
 			sprintf(msg, "Speed Setting Update Accepted: \n");
 
-			ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-			uart_irq_tx_enable(dev);
-			ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
-			uart_irq_tx_enable(dev);
+			sendMsg(msg);
+			sendMsg((const char *)cmd);
+			sendMsg("\n");
 		}
 		else
 		{
@@ -546,10 +611,9 @@ void parseSettingCmd(uint8_t cmd[RX_BUF_SIZE])
 			char msg[TX_BUF_SIZE];
 			sprintf(msg, "Speed Setting Update Rejected, incorrect syntax  or arm not init: \n");
 
-			ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-			uart_irq_tx_enable(dev);
-			ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
-			uart_irq_tx_enable(dev);
+			sendMsg(msg);
+			sendMsg((const char *)cmd);
+			sendMsg("\n");
 
 			return;
 		}
@@ -567,14 +631,13 @@ void comm_timer_callback(struct k_timer *timer_id)
 {
 	// k_timer_stop(&pingAnglePosition_timer);
 	char msg[TX_BUF_SIZE];
-	sprintf(msg, "Limit Switch Testing for Axes begin. \n\r\0");
-	ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-	uart_irq_tx_enable(dev);
+	sprintf(msg, "Limit Switch Testing for Axes begin. \n");
+	sendMsg(msg);
 	for (int i = 0; i < NUM_AXES; i++)
 	{
 		char tmpmsg[TX_BUF_SIZE];
 		//!Do not change the output of the following line - used in higher level ros stuff to check for limits.
-		sprintf(tmpmsg, "Limit Switch %d, is %d.  \n\r\0", i + 1, get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]));
+		sprintf(tmpmsg, "Limit Switch %d, is %d.  \n", i + 1, get_gpio(axes[i].LIMIT_PIN[0], axes[i].LIMIT_PIN[1]));
 
 
 		sendMsg(tmpmsg);
@@ -650,8 +713,7 @@ void home_timer_callback(struct k_timer *timer_id)
 					char msg[TX_BUF_SIZE];
 					sprintf(msg, "Axis %d is home. \n", i + 1);
 
-					ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-					uart_irq_tx_enable(dev);
+					sendMsg(msg);
 				}
 			}
 		}
@@ -713,8 +775,7 @@ void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]){
 	while (i < NUM_AXES && (end_ptr = strchr(start_ptr, ',')) != NULL)
 	{
 		char angle_str[10]; // Assume that the float will not exceed 9 characters
-		strncpy(angle_str, start_ptr, end_ptr - start_ptr);
-		angle_str[end_ptr - start_ptr] = '\n';	 // Null-terminate
+		copyField(angle_str, sizeof(angle_str), start_ptr, end_ptr);
 		// float des_speed_ = atof(angle_str);// will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
 		// float magnitude_ = abs(des_speed_);
 		// axes[i].step_des_pos = axes[i].step_pos + pos_or_negative_float(des_speed_)*angleToSteps(5.0, i); 
@@ -735,8 +796,7 @@ void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]){
 		if (end_ptr)
 		{
 			char angle_str[10];
-			strncpy(angle_str, start_ptr, end_ptr - start_ptr);
-			angle_str[end_ptr - start_ptr] = '\n';
+			copyField(angle_str, sizeof(angle_str), start_ptr, end_ptr);
 			axes[i].target_velocity = atof(angle_str);
 			// float des_speed_ = atof(angle_str);// will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
 			// float magnitude_ = abs(des_speed_);
@@ -755,10 +815,9 @@ void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]){
 		char msg[TX_BUF_SIZE];
 		sprintf(msg, "Absolute Target Velocity Command Accepted: \n");
 
-		ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-		uart_irq_tx_enable(dev);
-		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
-		uart_irq_tx_enable(dev);
+		sendMsg(msg);
+		sendMsg((const char *)cmd);
+		sendMsg("\n");
 		}
 	}
 	else
@@ -769,10 +828,9 @@ void parseAbsoluteTargetVelocityCmd(uint8_t cmd[RX_BUF_SIZE]){
 		char msg[TX_BUF_SIZE];
 		sprintf(msg, "Absolute Target Velocity Command Rejected, incorrect syntax or arm not homed: \n");
 
-		ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-		uart_irq_tx_enable(dev);
-		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
-		uart_irq_tx_enable(dev);
+		sendMsg(msg);
+		sendMsg((const char *)cmd);
+		sendMsg("\n");
 		// k_timer_start(&pingAnglePosition_timer, K_MSEC(50), K_NO_WAIT);
 		}
 		for(int j =0; j<NUM_AXES; j++){
@@ -802,8 +860,7 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 	while (i < NUM_AXES && (end_ptr = strchr(start_ptr, ',')) != NULL)
 	{
 		char angle_str[10]; // Assume that the float will not exceed 9 characters
-		strncpy(angle_str, start_ptr, end_ptr - start_ptr);
-		angle_str[end_ptr - start_ptr] = '\n';	 // Null-terminate
+		copyField(angle_str, sizeof(angle_str), start_ptr, end_ptr);
 		axes[i].des_angle_pos = atof(angle_str); // will sanitize any while space in the input. eg " 10.0" instead of "10.0" is fine
 		axes[i].target_speed = axes[i].max_speed;
 
@@ -818,8 +875,7 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		if (end_ptr)
 		{
 			char angle_str[10];
-			strncpy(angle_str, start_ptr, end_ptr - start_ptr);
-			angle_str[end_ptr - start_ptr] = '\n';
+			copyField(angle_str, sizeof(angle_str), start_ptr, end_ptr);
 			axes[i].des_angle_pos = atof(angle_str);
 			i++;
 		}
@@ -831,10 +887,9 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		char msg[TX_BUF_SIZE];
 		sprintf(msg, "Absolute Target Position Command Accepted: \n");
 
-		ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-		uart_irq_tx_enable(dev);
-		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
-		uart_irq_tx_enable(dev);
+		sendMsg(msg);
+		sendMsg((const char *)cmd);
+		sendMsg("\n");
 		}
 	}
 	else
@@ -845,10 +900,9 @@ void parseAbsoluteTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		char msg[TX_BUF_SIZE];
 		sprintf(msg, "Absolute Target Position Command Rejected, incorrect syntax or arm not homed: \n");
 
-		ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-		uart_irq_tx_enable(dev);
-		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
-		uart_irq_tx_enable(dev);
+		sendMsg(msg);
+		sendMsg((const char *)cmd);
+		sendMsg("\n");
 		// k_timer_start(&pingAnglePosition_timer, K_MSEC(50), K_NO_WAIT);
 		}
 
@@ -923,8 +977,7 @@ void parseIncrementalTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 	while (i < NUM_AXES && (end_ptr = strchr(start_ptr, ',')) != NULL)
 	{
 		char angle_str[10]; // Assume that the float will not exceed 9 characters
-		strncpy(angle_str, start_ptr, end_ptr - start_ptr);
-		angle_str[end_ptr - start_ptr] = '\n'; // Null-terminate
+		copyField(angle_str, sizeof(angle_str), start_ptr, end_ptr);
 		float angle = atof(angle_str);
 		// if(angle > 0){
 		axes[i].step_des_pos = axes[i].step_pos + angleToSteps(angle, i);
@@ -947,8 +1000,7 @@ void parseIncrementalTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		if (end_ptr)
 		{
 			char angle_str[10];
-			strncpy(angle_str, start_ptr, end_ptr - start_ptr);
-			angle_str[end_ptr - start_ptr] = '\n';
+			copyField(angle_str, sizeof(angle_str), start_ptr, end_ptr);
 			float angle = atof(angle_str);
 			// if(angle > 0){
 			axes[i].step_des_pos = axes[i].step_pos + angleToSteps(angle, i);
@@ -971,10 +1023,9 @@ void parseIncrementalTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		char msg[TX_BUF_SIZE];
 		sprintf(msg, "Incremental Target Position Command Accepted: \n");
 
-		ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-		uart_irq_tx_enable(dev);
-		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
-		uart_irq_tx_enable(dev);
+		sendMsg(msg);
+		sendMsg((const char *)cmd);
+		sendMsg("\n");
 	}
 	else
 	{
@@ -985,10 +1036,9 @@ void parseIncrementalTargetPositionCmd(uint8_t cmd[RX_BUF_SIZE])
 		char msg[TX_BUF_SIZE];
 		sprintf(msg, "Incremental Target Position Command Rejected, incorrect syntax or arm not homed: \n");
 
-		ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-		uart_irq_tx_enable(dev);
-		ring_buf_put(&ringbuf, cmd, RX_BUF_SIZE);
-		uart_irq_tx_enable(dev);
+		sendMsg(msg);
+		sendMsg((const char *)cmd);
+		sendMsg("\n");
 		// k_timer_start(&pingAnglePosition_timer, K_MSEC(50), K_NO_WAIT);
 
 		return;
@@ -1020,7 +1070,7 @@ void parseHomeCmd(uint8_t homeCmd[RX_BUF_SIZE])
 
 	 if(requested_axis < 0 || requested_axis > NUM_AXES){
 		char msg[TX_BUF_SIZE];
-				sprintf(msg, "requested %d, out of range \n\r\0", requested_axis);
+				sprintf(msg, "requested %d, out of range \n", requested_axis);
 				sendMsg("Error parsing requested_axis. Ignoring homing request\n");
 				sendMsg(msg);
 				return;
@@ -1072,9 +1122,7 @@ void parseHomeCmd(uint8_t homeCmd[RX_BUF_SIZE])
 		{
 			char msg[TX_BUF_SIZE];
 			sprintf(msg, "Homing Request Denied, Limit switch is pressed or broken\n");
-			ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-
-			uart_irq_tx_enable(dev);
+			sendMsg(msg);
 		}
 
 		// homeAllAxes();
@@ -1083,9 +1131,7 @@ void parseHomeCmd(uint8_t homeCmd[RX_BUF_SIZE])
 	{
 		char msg[TX_BUF_SIZE];
 		sprintf(msg, "Homing Sequence In progress, request ignored\n");
-		ring_buf_put(&ringbuf, (uint8_t *)msg, strlen(msg));
-
-		uart_irq_tx_enable(dev);
+		sendMsg(msg);
 	}
 }
 
@@ -1477,6 +1523,8 @@ int main(void)
 
 	uart_irq_callback_set(dev, interrupt_handler);
 
+	k_thread_start(cmd_thread);   // Start the parsing thread.
+
 	/* Enable rx interrupts */
 	uart_irq_rx_enable(dev);
 
@@ -1518,9 +1566,7 @@ int main(void)
 
 		// memcpy((uint8_t)axmsg, tx_bufferr, 64);
 
-		ring_buf_put(&ringbuf, (uint8_t *)axmsg, strlen(axmsg));
-
-		uart_irq_tx_enable(dev); // Enable the TX interrupt to start sending
+		sendMsg(axmsg);
 		k_sleep(K_MSEC(50));
 	
 		// char buffer[100];
