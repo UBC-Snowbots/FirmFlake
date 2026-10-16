@@ -237,11 +237,16 @@ static void cmd_thread_entry(void *p1, void *p2, void *p3)
 	struct cmd_line line;
 	while (true)
 	{
-		k_msgq_get(&cmd_msgq, &line, K_FOREVER);
+		// A bit rough, adds a 1 ms sleep
+		if (k_msgq_get(&cmd_msgq, &line, K_FOREVER) != 0)
+		{
+			k_msleep(1); // should never happen; never spin
+			continue;
+		}
 		parseCmd(line.buf);
 	}
 }
-K_THREAD_DEFINE(cmd_thread, 4096, cmd_thread_entry, NULL, NULL, NULL, K_PRIO_COOP(7), 0, 0);
+K_THREAD_DEFINE(cmd_thread, 4096, cmd_thread_entry, NULL, NULL, NULL, K_PRIO_PREEMPT(1), 0, K_TICKS_FOREVER);
 
 void copyField(char *dst, size_t dst_size, const char *start, const char *end)
 {
@@ -1517,6 +1522,8 @@ int main(void)
 	}
 
 	uart_irq_callback_set(dev, interrupt_handler);
+
+	k_thread_start(cmd_thread);   // Start the parsing thread.
 
 	/* Enable rx interrupts */
 	uart_irq_rx_enable(dev);
