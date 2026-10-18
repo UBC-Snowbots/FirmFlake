@@ -13,9 +13,9 @@ CanStatus CanSTM32G4XX::init()
     hfdcan.Init.TransmitPause = DISABLE;
     hfdcan.Init.ProtocolException = DISABLE;
     hfdcan.Init.NominalPrescaler = 1;
-    hfdcan.Init.NominalSyncJumpWidth = 6;
-    hfdcan.Init.NominalTimeSeg1 = 35;
-    hfdcan.Init.NominalTimeSeg2 = 12;
+    hfdcan.Init.NominalSyncJumpWidth = 4;
+    hfdcan.Init.NominalTimeSeg1 = 27;
+    hfdcan.Init.NominalTimeSeg2 = 4;
     hfdcan.Init.DataPrescaler = 1;
     hfdcan.Init.DataSyncJumpWidth = 1;
     hfdcan.Init.DataTimeSeg1 = 1;
