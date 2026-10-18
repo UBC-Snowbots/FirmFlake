@@ -94,6 +94,7 @@ static size_t expected_payload_len(uint16_t type)
         case MSG_TYPE__LED_PANEL_FEEDBACK:                  return sizeof(uint8_t) + sizeof(float);
         case MSG_TYPE__PTZ_VEL_CMD:                         return 8u;
         case MSG_TYPE__PTZ_FEEDBACK:                        return 8u;
+        case MSG_TYPE__MINI_ROVER_VEL_CMD:                  return 8u;
         default:                                            return SIZE_MAX; 
     }
 }
@@ -146,6 +147,10 @@ static size_t pack_payload(const msg_t* msg, uint8_t* out, size_t cap)
         PACK(out, pos, msg->payload.ptz_feedback.curr_vel_tilt);
         PACK(out, pos, msg->payload.ptz_feedback.curr_vel_pan);
         break;
+    case MSG_TYPE__MINI_ROVER_VEL_CMD:
+        PACK(out, pos, msg->payload.mini_rover_velcmd.lin_vel_mps);
+        PACK(out, pos, msg->payload.mini_rover_velcmd.ang_vel_degps);
+        break;
     default:
         return SIZE_MAX; // This is an error
     }
@@ -182,6 +187,10 @@ static bool unpack_payload(msg_t* msg, const uint8_t* in, size_t len)
     case MSG_TYPE__PTZ_FEEDBACK:
         UNPACK(in, pos, msg->payload.ptz_feedback.curr_vel_tilt);
         UNPACK(in, pos, msg->payload.ptz_feedback.curr_vel_pan);
+        break;
+    case MSG_TYPE__MINI_ROVER_VEL_CMD:
+        UNPACK(in, pos, msg->payload.mini_rover_velcmd.lin_vel_mps);
+        UNPACK(in, pos, msg->payload.mini_rover_velcmd.ang_vel_degps);
         break;
     default:
         return false;

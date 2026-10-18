@@ -48,15 +48,17 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 # Add user sources here
-Core/Src/app/app_main.cpp
-Core/Inc/can_comms/can_stm32g4xx.cpp
+    Core/Src/app/app_main.cpp
     Core/Inc/clock/clock_stm32g4xx.cpp
     Core/Inc/primitive_io/primitive_io_stm32g4xx.cpp
     Core/Inc/servo/servo_stm32g4xx.cpp
     Core/Inc/can_comms/can_stm32g4xx.cpp
-      Core/Inc/usr_leds/usr_led.cpp
+    Core/Inc/usr_leds/usr_led.cpp
     Core/Inc/clock/stopwatch.cpp
     Core/Inc/clock/timer.cpp
+
+    Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_adc.c
+     Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_adc_ex.c
 
 
 ${COMMON_LIBS_PATH}/comms/comms.c

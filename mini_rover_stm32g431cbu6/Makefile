@@ -3,7 +3,8 @@
 BUILD_DIR   := build
 TOOLCHAIN   := cmake/gcc-arm-none-eabi.cmake
 BUILD_TYPE  ?= Debug 
-TARGET      := mini_rover_stm32
+TARGET      := mini_rover
+SWD_FREQ	:= 1M
 
 .PHONY: all configure build flash-ocd clean rebuild flash reset help
 
@@ -31,7 +32,8 @@ build: configure
 	cmake --build $(BUILD_DIR)
 
 flash: build
-	st-flash --reset write $(BUILD_DIR)/$(TARGET).bin 0x08000000
+	st-flash --freq=$(SWD_FREQ) --reset write $(BUILD_DIR)/$(TARGET).bin 0x08000000
+
 
 flash-ocd: build
 	openocd -f interface/stlink.cfg -f target/stm32g4x.cfg \
