@@ -48,6 +48,8 @@ add_executable(${PROJECT_NAME}
     Core/Src/stm32g4xx_hal_msp.cpp
     Core/Src/stm32g4xx_hal_timebase_tim.c
     Core/Src/system_stm32g4xx.c
+    Core/Src/sysmem.c
+    Core/Src/syscalls.c
 
     Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_fdcan.c
     Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.c

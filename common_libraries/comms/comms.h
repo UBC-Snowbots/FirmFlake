@@ -84,6 +84,11 @@ typedef struct {
     // Thats all we got rn, open loop control
 } PTZFeedback_t;
 
+typedef struct {
+    float lin_vel_mps;
+    float ang_vel_degps;
+} MiniRoverVelCmd_t;
+
 typedef union {
     Ping_t          ping;
     HeartBeat_t     heartbeat;
@@ -92,6 +97,7 @@ typedef union {
     HardwareError_t     hardware_error;
     PTZVelCmd_t         ptz_vel_cmd;
     PTZFeedback_t       ptz_feedback;
+    MiniRoverVelCmd_t   mini_rover_velcmd;
 } Payload_t;
 
 // C friendly comms helper functions
@@ -127,6 +133,7 @@ typedef enum {
     MSG_TYPE__LED_PANEL_FEEDBACK,
     MSG_TYPE__PTZ_VEL_CMD,
     MSG_TYPE__PTZ_FEEDBACK,
+    MSG_TYPE__MINI_ROVER_VEL_CMD,
     NUM_MSG_TYPES
 } msg_type_t;
 
