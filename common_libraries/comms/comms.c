@@ -11,10 +11,17 @@ When transcoding for can, bytes 0 - 3 are contained within the can address
 
 
 /*
-How to add a message:
-- add a message type to the header
-- add your message to expected_payload_len(), encode() and decode().
-- Then make a pull request as soon as possible, or deal with minor merge conflicts
+HOW TO ADD A MESSAGE 
+* (Follow green comments)
+IN THE HEADER FILE: (comms.h)
+* Define a new message typedef. This defines the structure of your messsage. For example: "MyNewFeedback"
+* Append the message type to the union (Payload_t)
+* Append a new enum entry to the (msg_type_t) enum. Follow the naming pattern: "MSG_TYPE__MY_NEW_FEEDBACK"
+IN THIS FILE: (comms.c)
+* Add a case to expected_payload_len()
+* Add a case to pack_payload(), using the PACK macro (just follow the pattern)
+* Add a case to unpack_payload(), using the UNPACK macro (follow the pattern)
+- Then make a pull request as soon as possible, or deal with minor merge conflicts (these PRs can just be "added message type")
 
 Then, to use messages:
 First, set your device id: comms_set_device_id(your_id) -- See device_ids.h
@@ -55,6 +62,7 @@ RECEIVING;
 
 // If this was CPP then we'd add a namespace {}.
 
+// Why the heck are these do while(0)? - Its a standard way of using a macro that should be followed by a semicolon
 #define PACK(buf, pos, x) \
     do { memcpy((buf) + (pos), &(x), sizeof(x)); (pos) += sizeof(x); } while (0)
  
@@ -95,6 +103,8 @@ static size_t expected_payload_len(uint16_t type)
         case MSG_TYPE__PTZ_VEL_CMD:                         return 8u;
         case MSG_TYPE__PTZ_FEEDBACK:                        return 8u;
         case MSG_TYPE__MINI_ROVER_VEL_CMD:                  return 8u;
+
+        //* ADD YOUR MESSAGE ABOVE THIS LINE, RETURN THE SIZE OF IT
         default:                                            return SIZE_MAX; 
     }
 }
@@ -151,6 +161,8 @@ static size_t pack_payload(const msg_t* msg, uint8_t* out, size_t cap)
         PACK(out, pos, msg->payload.mini_rover_velcmd.lin_vel_mps);
         PACK(out, pos, msg->payload.mini_rover_velcmd.ang_vel_degps);
         break;
+
+    //* ADD YOUR MESSAGE TYPE HERE, USING THE PACK MACRO
     default:
         return SIZE_MAX; // This is an error
     }
@@ -192,6 +204,8 @@ static bool unpack_payload(msg_t* msg, const uint8_t* in, size_t len)
         UNPACK(in, pos, msg->payload.mini_rover_velcmd.lin_vel_mps);
         UNPACK(in, pos, msg->payload.mini_rover_velcmd.ang_vel_degps);
         break;
+
+    //* ADD YOUR MESSAGE TYPE HERE, USING THE UNPACK MACRO
     default:
         return false;
     }
