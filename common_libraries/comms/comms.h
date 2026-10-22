@@ -13,7 +13,7 @@ extern "C" {
 
 static_assert(sizeof(float) == 4, "Comms requires 32-bit floats");
 
-//* Using CAN
+// Using Normal CAN
 #define MAX_PAYLOAD_SIZE_BYTES_CAN 8u
 // #define MAX_PAYLOAD_SIZE_BYTES_CANFD 64u
 
@@ -89,6 +89,11 @@ typedef struct {
     float ang_vel_degps;
 } MiniRoverVelCmd_t;
 
+
+
+
+
+ //** ADD NEW MESSAGE TYPEDEFS ABOVE THIS LINE
 typedef union {
     Ping_t          ping;
     HeartBeat_t     heartbeat;
@@ -98,6 +103,8 @@ typedef union {
     PTZVelCmd_t         ptz_vel_cmd;
     PTZFeedback_t       ptz_feedback;
     MiniRoverVelCmd_t   mini_rover_velcmd;
+
+    //* THEN ADD YOUR MESSAGE TYPEDEF TO THIS UNION
 } Payload_t;
 
 // C friendly comms helper functions
@@ -134,6 +141,8 @@ typedef enum {
     MSG_TYPE__PTZ_VEL_CMD,
     MSG_TYPE__PTZ_FEEDBACK,
     MSG_TYPE__MINI_ROVER_VEL_CMD,
+
+    //* ADD YOUR MESSAGE NAME HERE, FOLLOWING THE NAMING PATTERN
     NUM_MSG_TYPES
 } msg_type_t;
 
