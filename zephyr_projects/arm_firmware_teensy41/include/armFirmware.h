@@ -83,7 +83,7 @@ this is not easy
 #define SPEED_PING_MS_INTERVAL 150 // 50ms is 20 hz
 
 
-#define ARM_COMM_RATE 20 //Hz, only here for refrence
+#define ARM_COMM_RATE 100 //Hz, only here for refrence
 
 //comm characters
 #define HOME_CHAR 'h'
@@ -123,9 +123,17 @@ inline int ppr[NUM_AXES] = {400, 400, 400, 400, 400, 400, 400};
 
 // Gear Reductions
 // inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 5.18}; 
-inline float red[NUM_AXES] = {50.0, 160.0, 92.3077, 250, 57.0, 170.00, 100.0}; //? Double check with arm 
+inline float red[NUM_AXES] = {50.0, 160.0, 92.3077, 345.09973333333335, 57.0, 170.00, 100.0}; //? Double check with arm 
 // inline float red[6] = {50.0, 160.0, 92.3077, 43.936, 57.0, 20.00}; //? Double check with arm -> August 11th
-//?A6 10:17 for belts -> 170 to one
+//?A6 10:17 for belts -> 170 to one - Old?
+
+// A4 with new motor and belt...
+// MOTOR: 100:1, apparently 99.548:1
+// Pinion Teeth: 15
+// Big gear: 52 (counted 13 then x4)
+// Total: 99.548/1 * 52/15 = 345.09973333333335
+// Changed from 250 , which was obbsly off
+
 
 //from old driver
 // // Motor pins      

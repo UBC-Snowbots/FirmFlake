@@ -67,7 +67,7 @@ void Axis::attach() {
     int zoo;
     zoo = gpio_pin_configure(stepdev, STEP_PIN[1], GPIO_OUTPUT);
     zoo = zoo ? zoo : gpio_pin_configure(dirdev, DIR_PIN[1], GPIO_OUTPUT);
-    zoo = zoo ? zoo : gpio_pin_configure(limdev, LIMIT_PIN[1], GPIO_INPUT | GPIO_PULL_UP);
+    zoo = zoo ? zoo : gpio_pin_configure(limdev, LIMIT_PIN[1], GPIO_INPUT | GPIO_PULL_UP); // zooooo!
 	// gpio_init_callback(&limit_switch_cb_data, limit_switch_callback, BIT(LIMIT_PIN[1]));
 	// gpio_add_callback(limdev, &limit_switch_cb_data);
 	// gpio_pin_interrupt_configure(limdev, LIMIT_PIN[1], GPIO_INT_EDGE_FALLING);
