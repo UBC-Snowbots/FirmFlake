@@ -1,3 +1,4 @@
+// this is vibecoded
 #pragma once
 
 #define CLOCK_FREQ_MHz 16
