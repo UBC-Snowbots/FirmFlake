@@ -20,7 +20,7 @@
 #include "main.h"
 #include "adc.h"
 #include "fdcan.h"
-#include "stm32g4xx_hal.h"
+#include "stm32g4xx_hal_adc_ex.h"
 #include "stm32g4xx_hal_gpio.h"
 #include "usart.h"
 #include "usb.h"
@@ -100,8 +100,10 @@ int main(void)
   MX_ADC2_Init();
   MX_ADC3_Init();
   /* USER CODE BEGIN 2 */
-  // HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
-  // HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
+  HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+  HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
+  HAL_ADCEx_Calibration_Start(&hadc3, ADC_SINGLE_ENDED);
+
   app_main();
   /* USER CODE END 2 */
 
@@ -110,9 +112,9 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
-    HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
+    HAL_GPIO_WritePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin, GPIO_PIN_SET);
+
   }
   /* USER CODE END 3 */
 }

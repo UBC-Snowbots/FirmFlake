@@ -6,7 +6,10 @@
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_gpio.h"
 
+#define ADC_RESOLUTION_FACTOR ((float)((1UL << 16) - 1))
+
 // ****** 24V Voltage/Current ADC ****** //
+
 /* 24V voltage */
 uint32_t adc_24v_voltage_raw = 0;
 float adc_24v_voltage = 0.0f;
@@ -29,6 +32,8 @@ float current_chassis = 0.0f;
 uint32_t adc_misc_current_raw = 0;
 float adc_misc_current_voltage = 0.0f;
 float current_misc = 0.0f;
+
+/* Reference Voltage (VDD)*/
 float vref_volts;
 uint32_t vref_mv;
 
@@ -59,19 +64,19 @@ extern "C" void app_main(void)
 
         // Read V_bat basically 
         adc_24v_voltage_raw = ADC1_Read_Channel(ADC_CHANNEL_2);
-        adc_24v_voltage = (((float)adc_24v_voltage_raw * vref_volts) / 4095.0f);
+        adc_24v_voltage = (((float)adc_24v_voltage_raw * vref_volts) / ADC_RESOLUTION_FACTOR);
         voltage_24v = Calculate_24V_Voltage(adc_24v_voltage);
 
         adc_arm_current_raw = ADC2_Read_Channel(ADC_CHANNEL_11);
-	    adc_arm_current_voltage = ((float)adc_arm_current_raw / 4095.0f) * vref_volts;
+	    adc_arm_current_voltage = ((float)adc_arm_current_raw / ADC_RESOLUTION_FACTOR) * vref_volts;
 	    current_arm = Calculate_Current(adc_arm_current_voltage);
 
         adc_chassis_current_raw = ADC2_Read_Channel(ADC_CHANNEL_15);
-	    adc_chassis_current_voltage = ((float)adc_chassis_current_raw / 4095.0f) * vref_volts;
+	    adc_chassis_current_voltage = ((float)adc_chassis_current_raw / ADC_RESOLUTION_FACTOR) * vref_volts;
 	    current_chassis = Calculate_Current(adc_chassis_current_voltage);
         
         adc_misc_current_raw = ADC2_Read_Channel(ADC_CHANNEL_13);
-	    adc_misc_current_voltage = ((float)adc_misc_current_raw / 4095.0f) * vref_volts;
+	    adc_misc_current_voltage = ((float)adc_misc_current_raw / ADC_RESOLUTION_FACTOR) * vref_volts;
 	    current_misc = Calculate_Current(adc_misc_current_voltage);
 
         HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
@@ -93,7 +98,7 @@ uint32_t ADC1_Read_Channel(uint32_t channel)
   /* Configure ADC1 channel */
   sConfig.Channel = channel;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_92CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
@@ -140,7 +145,7 @@ uint32_t ADC2_Read_Channel(uint32_t channel)
   /* Configure ADC2 channel */
   sConfig.Channel = channel;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_92CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
