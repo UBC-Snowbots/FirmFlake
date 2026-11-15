@@ -9,7 +9,7 @@
 #include <comms.h>
 
 // ---- Tunables ----------------------------------------------------------------
-static constexpr float    MAX_DUTY       = 0.40f;  // L298s are overvolted: NEVER exceed 40%
+static constexpr float    MAX_DUTY       = 1.00f;  // L298s are overvolted: NEVER exceed 40%
 static constexpr float    MAX_LIN_MPS    = 1.0f;   // linear cmd that maps to MAX_DUTY (guess, tune)
 static constexpr float    MAX_ANG_DEGPS  = 90.0f;  // angular cmd that maps to MAX_DUTY (guess, tune)
 static constexpr uint32_t CMD_TIMEOUT_MS = 500;    // stop motors if no command for this long
