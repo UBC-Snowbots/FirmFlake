@@ -6,7 +6,6 @@ cmake --preset Debug; if ($?) { cmake --build --preset Debug --clean-first }
 
 Workpath
 addressing feedback:
-* Figure out what the structure of PrimitiveIO is suppossed to do, come up with a plan to move these functions to the common library
 * Figure out pin defs, and 
 * implement changes to calibration according to Rowans comments. 
     * Probably poll time since last update or something instead of interrupts (overkill, calibration can be costly time-wise)

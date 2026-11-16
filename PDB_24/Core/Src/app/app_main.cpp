@@ -1,14 +1,63 @@
+// Author: Alan Cheng 
 #include "adc.h"
 #include "main.h"
 #include "fdcan.h"
 #include "can_stm32g4xx.h"
+#include "stm32g4xx_hal_adc_ex.h"
 #include <comms.h>
-#include "stm32g4xx_hal.h"
-#include "stm32g4xx_hal_adc.h"
-#include "stm32g4xx_hal_gpio.h"
+#include <primitive_io_stm32g4xx.hpp>
+#include <timer.hpp>
+#include <clock_stm32g4xx.hpp>
 
 #define ADC_RESOLUTION_FACTOR ((float)((1UL << 16) - 1))
 
+// ADC Definitions
+PrimitiveAnalogInputSTM32G4XX adc_arm(
+  ARM_SENSE_GPIO_Port, 
+  ARM_SENSE_Pin, 
+  ADC2, 
+  ADC_CHANNEL_11 
+);
+
+PrimitiveAnalogInputSTM32G4XX adc_vbat(
+  SENSE_24V_GPIO_Port, 
+  SENSE_24V_Pin, 
+  ADC1, 
+  ADC_CHANNEL_2 
+);
+
+PrimitiveAnalogInputSTM32G4XX adc_chassis(
+  CHASSIS_SENSE_GPIO_Port, 
+  CHASSIS_SENSE_Pin, 
+  ADC2, 
+  ADC_CHANNEL_15
+);
+
+PrimitiveAnalogInputSTM32G4XX adc_misc(
+  MISC_SENSE_GPIO_Port, 
+  MISC_SENSE_Pin, 
+  ADC2, 
+  ADC_CHANNEL_13
+);
+
+// Read Reference Voltage 
+/**  TODO: COnvert to DMA based architecture, meaning that whenever I run voltage conversion it'll convert to the latest voltage 
+**/
+
+/* Reference Voltage (VDD)*/
+float vref_volts;
+uint32_t vref_mv;
+uint32_t ADC3_ReadVref_mV(void);
+
+/* ADC Re-calibration*/
+float previous_calibration_time;
+float current_time;
+
+ClockSTM32G4XX clock;
+Timer minute_timer(clock, true);
+Timer second_timer(clock, true);
+
+// TODO: move this thingy to some other thing, better software practice i think 
 struct ADC_Data {
   uint32_t adc_raw;
   float adc_voltage;
@@ -17,8 +66,11 @@ struct ADC_Data {
   * @brief Convert raw readings to voltage 
   * @retval Sets adc_voltage to the converted adc_raw 
   **/
-  
-  
+  void Convert_ADC_Voltage() {
+    uint32_t vref_mv = ADC3_ReadVref_mV();
+    if (vref_mv != 0) vref_volts = vref_mv / 1000.0f;
+    adc_voltage = (((float)adc_raw * vref_volts) / ADC_RESOLUTION_FACTOR);
+  } 
 
   /**
   * @brief Calculate actual 24V rail voltage from ADC voltage
@@ -37,7 +89,6 @@ struct ADC_Data {
     * @brief Calculate current from TMCS1123 output voltage
     * @param adc_voltage Hall sensor output voltage
     * @retval Measured current in Amps
-
     * TMCS1123B1:
     * Zero-current output = 1.65V
     * Sensitivity = 25mV/A = 0.025V/A
@@ -51,156 +102,58 @@ struct ADC_Data {
 };
 
 
-
-// ****** 24V Voltage/Current ADC ****** //
-/* Reference Voltage (VDD)*/
-float vref_volts;
-uint32_t vref_mv;
-
-//[**********************24V Voltage/Current ADC****************************]//
-
-uint32_t ADC1_Read_Channel(uint32_t channel);
-
-uint32_t ADC2_Read_Channel(uint32_t channel);
-
-// float Calculate_24V_Voltage(float adc_voltage);
-
-// float Calculate_Current(float adc_voltage);
-
-uint32_t ADC3_ReadVref_mV(void);
-
 extern "C" void app_main(void)
 {
   ADC_Data v_bat = {0};
   ADC_Data arm_current = {0};
   ADC_Data chassis_current = {0};
   ADC_Data misc_current = {0};
+  HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+  HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
+  HAL_ADCEx_Calibration_Start(&hadc3, ADC_SINGLE_ENDED);
   
+  // Setting timers 
+  if (!minute_timer.init()) Error_Handler();
+  minute_timer.set(60'000);
+
+  if (!second_timer.init()) Error_Handler();
+  second_timer.set(1000);
+
   while (1) 
   {
-      uint32_t vref_mv = ADC3_ReadVref_mV();
-
-      if (vref_mv != 0)
-      {
-            vref_volts = vref_mv / 1000.0f;
-
-          // Use vref_volts for other ADC calculations
-      }
-
-      // Read V_bat basically 
-      v_bat.adc_raw = ADC1_Read_Channel(ADC_CHANNEL_2);
-      v_bat.adc_voltage = (((float)adc_24v_voltage_raw * vref_volts) / ADC_RESOLUTION_FACTOR);
-      v_bat.Calculate_24V_Voltage();
-
-      arm_current.adc_raw = ADC2_Read_Channel(ADC_CHANNEL_11);
-      arm_current.adc_voltage = ((float)adc_arm_current_raw / ADC_RESOLUTION_FACTOR) * vref_volts;
-      arm_current.adc_voltage = Calculate_Current(arm_current.adc_voltage);
-
-      adc_chassis_current_raw = ADC2_Read_Channel(ADC_CHANNEL_15);
-      adc_chassis_current_voltage = ((float)adc_chassis_current_raw / ADC_RESOLUTION_FACTOR) * vref_volts;
-      current_chassis = Calculate_Current(adc_chassis_current_voltage);
-      
-      adc_misc_current_raw = ADC2_Read_Channel(ADC_CHANNEL_13);
-      adc_misc_current_voltage = ((float)adc_misc_current_raw / ADC_RESOLUTION_FACTOR) * vref_volts;
-      current_misc = Calculate_Current(adc_misc_current_voltage);
-
+    // Run re-calibration every minute or so
+    // This is to prevent temperature drift from affecting readings
+    if (minute_timer.expired()) {
+      HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+      HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
+      HAL_ADCEx_Calibration_Start(&hadc3, ADC_SINGLE_ENDED);
+    }
+    
+    // Heartbeat? for PDB Debug Light 
+    if (second_timer.expired()) {
       HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
-      HAL_Delay(1000);
+    }
+
+    // Read V_Bat 
+    adc_vbat.read(v_bat.adc_raw);
+    v_bat.Convert_ADC_Voltage();
+    v_bat.Calculate_24V_Voltage();
+
+    // Read Arm Current 
+    adc_arm.read(arm_current.adc_raw);
+    arm_current.Convert_ADC_Voltage();
+    arm_current.Calculate_24V_Voltage();
+
+    // Read Chassis Current 
+    adc_chassis.read(chassis_current.adc_raw);
+    chassis_current.Convert_ADC_Voltage();
+    chassis_current.Calculate_24V_Voltage();
+    
+    // Read misc. current 
+    adc_misc.read(misc_current.adc_raw);
+    misc_current.Convert_ADC_Voltage();
+    misc_current.Calculate_24V_Voltage();
   }
-}
-
-/**
-  * @brief Read a single ADC1 channel
-  * @param channel ADC1 channel to read
-  * @retval Raw 12-bit ADC value (0-4095)
-  */
-uint32_t ADC1_Read_Channel(uint32_t channel)
-{
-  ADC_ChannelConfTypeDef sConfig = {0};
-  uint32_t adc_value = 0;
-
-  /* Configure ADC1 channel */
-  sConfig.Channel = channel;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
-  sConfig.SingleDiff = ADC_SINGLE_ENDED;
-  sConfig.OffsetNumber = ADC_OFFSET_NONE;
-  sConfig.Offset = 0;
-
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Start conversion */
-  if (HAL_ADC_Start(&hadc1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Wait for conversion */
-  if (HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Read result */
-  adc_value = HAL_ADC_GetValue(&hadc1);
-
-  /* Stop ADC */
-  if (HAL_ADC_Stop(&hadc1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  return adc_value;
-}
-
-/**
-  * @brief Read a single ADC2 channel
-  * @param channel ADC2 channel to read
-  * @retval Raw 12-bit ADC value (0-4095)
-  */
-uint32_t ADC2_Read_Channel(uint32_t channel)
-{
-  ADC_ChannelConfTypeDef sConfig = {0};
-  uint32_t adc_value = 0;
-
-  /* Configure ADC2 channel */
-  sConfig.Channel = channel;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
-  sConfig.SingleDiff = ADC_SINGLE_ENDED;
-  sConfig.OffsetNumber = ADC_OFFSET_NONE;
-  sConfig.Offset = 0;
-
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Start conversion */
-  if (HAL_ADC_Start(&hadc2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Wait for conversion */
-  if (HAL_ADC_PollForConversion(&hadc2, HAL_MAX_DELAY) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Read result */
-  adc_value = HAL_ADC_GetValue(&hadc2);
-
-  /* Stop ADC */
-  if (HAL_ADC_Stop(&hadc2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  return adc_value;
 }
 
 
