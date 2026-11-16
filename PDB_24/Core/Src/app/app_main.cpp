@@ -9,36 +9,8 @@
 #include <timer.hpp>
 #include <clock_stm32g4xx.hpp>
 
-#define ADC_RESOLUTION_FACTOR ((float)((1UL << 16) - 1))
+constexpr float ADC_RESOLUTION_FACTOR = ((1UL << 16) - 1);
 
-// ADC Definitions
-PrimitiveAnalogInputSTM32G4XX adc_arm(
-  ARM_SENSE_GPIO_Port, 
-  ARM_SENSE_Pin, 
-  ADC2, 
-  ADC_CHANNEL_11 
-);
-
-PrimitiveAnalogInputSTM32G4XX adc_vbat(
-  SENSE_24V_GPIO_Port, 
-  SENSE_24V_Pin, 
-  ADC1, 
-  ADC_CHANNEL_2 
-);
-
-PrimitiveAnalogInputSTM32G4XX adc_chassis(
-  CHASSIS_SENSE_GPIO_Port, 
-  CHASSIS_SENSE_Pin, 
-  ADC2, 
-  ADC_CHANNEL_15
-);
-
-PrimitiveAnalogInputSTM32G4XX adc_misc(
-  MISC_SENSE_GPIO_Port, 
-  MISC_SENSE_Pin, 
-  ADC2, 
-  ADC_CHANNEL_13
-);
 
 // Read Reference Voltage 
 /**  TODO: COnvert to DMA based architecture, meaning that whenever I run voltage conversion it'll convert to the latest voltage 
@@ -97,17 +69,57 @@ struct ADC_Data {
   void Calculate_Current() {
     const float sensor_zero_voltage = 1.65f;
     const float sensor_sensitivity = 0.025f;
-    data = (adc_raw - sensor_zero_voltage) / sensor_sensitivity;
+    data = (adc_voltage - sensor_zero_voltage) / sensor_sensitivity;
   }
 };
 
 
 extern "C" void app_main(void)
 {
+  /* ADC Init */
   ADC_Data v_bat = {0};
   ADC_Data arm_current = {0};
   ADC_Data chassis_current = {0};
   ADC_Data misc_current = {0};
+  
+  // ADC Definitions
+  PrimitiveAnalogInputSTM32G4XX adc_arm(
+    ARM_SENSE_GPIO_Port, 
+    ARM_SENSE_Pin, 
+    ADC2, 
+    ADC_CHANNEL_11,
+    &hadc2.Init
+  );
+
+  PrimitiveAnalogInputSTM32G4XX adc_vbat(
+    SENSE_24V_GPIO_Port, 
+    SENSE_24V_Pin, 
+    ADC1, 
+    ADC_CHANNEL_2,
+    &hadc1.Init
+    
+  );
+
+  PrimitiveAnalogInputSTM32G4XX adc_chassis(
+    CHASSIS_SENSE_GPIO_Port, 
+    CHASSIS_SENSE_Pin, 
+    ADC2, 
+    ADC_CHANNEL_15,
+    &hadc2.Init
+  );
+
+  PrimitiveAnalogInputSTM32G4XX adc_misc(
+    MISC_SENSE_GPIO_Port, 
+    MISC_SENSE_Pin, 
+    ADC2, 
+    ADC_CHANNEL_13,
+    &hadc2.Init
+  );
+  // idt PrimitiveAnalogInput.init() changes CubeMX's init settings, safe to run?
+  adc_vbat.init();
+  adc_arm.init();
+  adc_chassis.init();
+  adc_misc.init();
   HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
   HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
   HAL_ADCEx_Calibration_Start(&hadc3, ADC_SINGLE_ENDED);
@@ -142,17 +154,17 @@ extern "C" void app_main(void)
     // Read Arm Current 
     adc_arm.read(arm_current.adc_raw);
     arm_current.Convert_ADC_Voltage();
-    arm_current.Calculate_24V_Voltage();
+    arm_current.Calculate_Current();
 
     // Read Chassis Current 
     adc_chassis.read(chassis_current.adc_raw);
     chassis_current.Convert_ADC_Voltage();
-    chassis_current.Calculate_24V_Voltage();
+    chassis_current.Calculate_Current();
     
     // Read misc. current 
     adc_misc.read(misc_current.adc_raw);
     misc_current.Convert_ADC_Voltage();
-    misc_current.Calculate_24V_Voltage();
+    misc_current.Calculate_Current();
   }
 }
 
