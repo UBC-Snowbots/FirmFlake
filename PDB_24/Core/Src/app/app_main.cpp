@@ -97,7 +97,6 @@ extern "C" void app_main(void)
     ADC1, 
     ADC_CHANNEL_2,
     &hadc1.Init
-    
   );
 
   PrimitiveAnalogInputSTM32G4XX adc_chassis(
@@ -171,7 +170,10 @@ extern "C" void app_main(void)
 
 
 #define VREFINT_SAMPLE_COUNT 32U
-
+/**
+*@brief Read internal (bandgap voltage reference) which is ~1.25V to give you the correct vref+/vdda with 
+*@retval returns Vref in millivolts (float)
+**/
 uint32_t ADC3_ReadVref_mV(void)
 {
     uint32_t sum = 0;
