@@ -302,3 +302,53 @@ bool convert_from_raw(const uint8_t* raw_in, encoded_msg_t* out)
     memcpy(out->payload, raw_in + pos, plen);
     return true;
 }
+
+/*---------------------- UART-Specific Stuff -------------------------------- */
+/* 
+ * COBS (Consistent Overhead Byte Stuffing) is well-established framing thingy for UART, using 0x00 as delimiter 
+ ? COBS implementation based on https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing#Implementation
+ TODO: figure out if memcpy is better 
+*/
+size_t encodeCOBS(const void *data, size_t length, uint8_t *buffer) {
+    // assert(data && buffer); // originally this, idk why 
+    if (!data || !buffer) return 0;
+
+    uint8_t *encode = buffer; // encoded byte pointer 
+    uint8_t *codep = encode++; // Output code pointer
+    uint8_t code = 1; // Code value 
+
+    for (const uint8_t *byte = (const uint8_t *)data; length--; ++byte) { // wtf 
+        if (*byte) // byte not zero, write it
+            *encode++ = *byte, ++code; 
+        if (!*byte || code == 0xff) {
+            *codep = code, code = 1, codep = encode;
+            if (!*byte || length)
+                ++encode;
+        }
+    }
+    *codep = code; // write final code value 
+    *encode++ = 0x00; // append delimiter 
+    return (size_t)(encode - buffer);
+}
+
+size_t decodeCOBS(const uint8_t *buffer, size_t length, void *data) {
+    if (!data || !buffer) return 0; // dont do anything in the case for null ptr 
+    
+    const uint8_t *byte = buffer; // encoded input byte pointer 
+    uint8_t *decode = (uint8_t *)data; // decoded output byte buffer 
+
+    for (uint8_t code = 0xff, block = 0; byte < buffer + length; --block)  // dafuq why is there so many params 
+    {
+        if (block) // decode block byte, wtf is block?
+            *decode++ = *byte++;
+        else {
+            block = *byte++;
+            if (block && (code != 0xff))
+                *decode++ = 0;
+            code = block;
+            if (!code) // delimiter found
+                break;
+        }
+    }
+    return (size_t)(decode - (uint8_t *)data);
+}
