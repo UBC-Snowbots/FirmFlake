@@ -400,3 +400,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# CMake stuff
+CMakeLists.txt.user
+CMakeCache.txt

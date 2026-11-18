@@ -1,4 +1,5 @@
 #include "comms.h"
+#include "crc.h"
 //TODO tests tests tests
 // Message Structure (not can specific, and not super efficient)
 /*
@@ -301,4 +302,88 @@ bool convert_from_raw(const uint8_t* raw_in, encoded_msg_t* out)
     memset(out->payload, 0, sizeof out->payload);
     memcpy(out->payload, raw_in + pos, plen);
     return true;
+}
+
+/*---------------------- UART-Specific Stuff -------------------------------- */
+/* 
+ * COBS (Consistent Overhead Byte Stuffing) is well-established framing thingy for UART, using 0x00 as delimiter 
+ ? COBS implementation based on https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing#Implementation
+ TODO: figure out if memcpy is better 
+*/
+size_t encodeCOBS(const void *data, size_t length, uint8_t *buffer) {
+    if (!data || !buffer) return 0;
+
+    uint8_t *encode = buffer; // encoded byte pointer 
+    uint8_t *codep = encode++; // Output code pointer
+    uint8_t code = 1; // Code value 
+
+    for (const uint8_t *byte = (const uint8_t *)data; length--; ++byte) { // wtf 
+        if (*byte) // byte not zero, write it
+            *encode++ = *byte, ++code; 
+        if (!*byte || code == 0xff) {
+            *codep = code, code = 1, codep = encode;
+            if (!*byte || length)
+                ++encode;
+        }
+    }
+    *codep = code; // write final code value 
+    *encode++ = 0x00; // append delimiter 
+    return (size_t)(encode - buffer);
+}
+
+size_t decodeCOBS(const uint8_t *buffer, size_t length, void *data) {
+    if (!data || !buffer) return 0; // dont do anything in the case for null ptr 
+    
+    const uint8_t *byte = buffer; // encoded input byte pointer 
+    uint8_t *decode = (uint8_t *)data; // decoded output byte buffer 
+
+    for (uint8_t code = 0xff, block = 0; byte < buffer + length; --block)
+    {
+        if (block) 
+            *decode++ = *byte++;
+        else {
+            block = *byte++;
+            if (block && (code != 0xff))
+                *decode++ = 0;
+            code = block;
+            if (!code) // delimiter found
+                break;
+        }
+    }
+    return (size_t)(decode - (uint8_t *)data);
+}
+
+// [COBS overhead byte][raw message encoded][CRC16][0x00 delimiter] = 1 + 14 + 2 + 1 
+size_t convert_to_uart(const encoded_msg_t *inptr, size_t len, uint8_t *outptr) {
+    if (!inptr || !outptr) return false; // reject nullptr's 
+    uint8_t frame_buf[COMMS_UART_MSG_SIZE]; // issa fixed length 
+    if (!convert_to_raw(inptr, frame_buf)) return false; 
+    
+    uint16_t crc = crc16(frame_buf, COMMS_RAW_MSG_SIZE);
+    size_t pos = COMMS_RAW_MSG_SIZE; // PACK macro updates pos here 
+    PACK(frame_buf, pos, crc); // PACK macro packs stuff little-endianly 
+
+    size_t encoded_len = encodeCOBS(frame_buf, pos, outptr);
+    return encoded_len;
+}
+
+bool convert_from_uart(const uint8_t *inptr, size_t len, encoded_msg_t *outptr) {
+    if (!inptr || !outptr || len < COMMS_UART_MSG_SIZE) return false;
+
+    // COBS frame (16 bytes -> 14 bytes: 12-byte raw frame + 2-byte CRC16)
+    uint8_t raw_with_crc[COMMS_RAW_MSG_SIZE + COMMS_CRC16_SIZE];
+    size_t decoded_len = decodeCOBS(inptr, len, raw_with_crc);
+    if (decoded_len != sizeof(raw_with_crc)) return false;
+
+    // Unpack the received little-endian CRC16 from bytes 12-13
+    uint16_t rx_crc = 0;
+    size_t pos = COMMS_RAW_MSG_SIZE;
+    UNPACK(raw_with_crc, pos, rx_crc);
+
+    // Recompute CRC over bytes 0-11 and verify
+    uint16_t calc_crc = crc16(raw_with_crc, COMMS_RAW_MSG_SIZE);
+    if (rx_crc != calc_crc) return false;
+
+    // Convert the verified 12-byte raw frame into encoded_msg_t
+    return convert_from_raw(raw_with_crc, outptr);
 }

@@ -29,6 +29,8 @@ static_assert(sizeof(float) == 4, "Comms requires 32-bit floats");
 #define COMMS_CAN_EXT_ID_MASK  0x1FFFFFFFu  // Mask to 29 bits
 #define COMMS_INVALID_DEVICE_ID 0x1FFFu     // Set as default. 
 
+#define COMMS_CRC16_SIZE 2u
+#define COMMS_UART_MSG_SIZE (1u + COMMS_RAW_MSG_SIZE + COMMS_CRC16_SIZE + 1u) // COBS overhead + that thing + delimiter
 
 #define PING_RESERVED_1 0xBEEFu //idk
 #define PING_RESERVED_2 0xABBAu //idk
@@ -153,18 +155,72 @@ uint16_t id_type(uint32_t id);
 void     comms_set_device_id(uint16_t device_id);
 uint16_t comms_get_device_id(void);
 
+/**
+* @brief Packages message with opener, message ID, and payload
+*/
 bool encode(const msg_t* msg_in, encoded_msg_t* encoded_msg_out);
+/**
+* @brief Extracts msg 
+* @param encoded_msg_in the encoded msg recieved
+* @param msg_out the decoded/extracted msg in format msg_t 
+*/
 bool decode(const encoded_msg_t* encoded_msg_in, msg_t* msg_out);
 
 bool convert_to_can  (const encoded_msg_t* in, can_msg_t* out);
 bool convert_from_can(const can_msg_t* in, encoded_msg_t* out);
 
+/**
+* @brief Converts an encoded message (struct) into a zero-padded frame
+* 
+* Use this when not using CAN to get byte layout from struct form 
+* 
+* @param[in] in encoded message to convert
+* @param[out] raw_out buffer thats recieving the raw frame
+* @pre raw_out points to a buffer big enough 
+ */
 bool convert_to_raw  (const encoded_msg_t* in, uint8_t* raw_out);
+/** 
+ * @brief Reconstructs an encoded message from a raw frame.  
+*/
 bool convert_from_raw(const uint8_t* raw_in, encoded_msg_t* out);
+// ?Undefined
 bool len_to_dlc(const uint8_t len, uint32_t* dlc_out);
+// ?Undefined 
 bool dlc_to_len(const uint32_t dlc, uint8_t* len_out);
 
+size_t getCOBSBufferSize(size_t input_size, bool with_trailing_zero);
 
+/**
+* @brief Encode a buffer of bytes using COBS (UART framing), 
+*        Use after attaching CRC-16. Good to send over uart after calling this one
+* @note This implementation should be able to support packets up to 254 bytes 
+* @param data Pointer to input data to encode 
+* @param length length of the input data 
+* @param buffer Pointer to output buffer
+* @retval number of bytes written to the output buffer 
+*/
+size_t encodeCOBS(const void *data, size_t length, uint8_t *buffer);
+
+/**
+* @brief decode buffer of bytes using COBS, only rly decides if a frame is valid or nah 
+* @param buffer Pointer to encoded bytes 
+* @param data Pointer to decoded output data 
+* @param length Number of bytes to decode 
+* @retval number of bytes written to output buffer 
+*/
+size_t decodeCOBS(const uint8_t* buffer, size_t length, void* data);
+
+/**
+ * @brief converts an encoded messsage (struct) to shit u can put directly onto UART
+ * @retval len of fully uart framed message 
+ */
+size_t convert_to_uart(const encoded_msg_t* inptr, size_t len, uint8_t* outptr);
+/**
+ * @brief converts raw UART stuff back into an encoded message 
+ * @note you should call this function that passes a buffer within two COBS delimters (0x00)
+ * @returns true if passed CRC16 and msg updated, false otherwise 
+ */
+bool convert_from_uart(const uint8_t* inptr, size_t len, encoded_msg_t* outptr);
 
 #ifdef __cplusplus
 }
