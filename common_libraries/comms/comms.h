@@ -192,7 +192,7 @@ size_t getCOBSBufferSize(size_t input_size, bool with_trailing_zero);
 
 /**
 * @brief Encode a buffer of bytes using COBS (UART framing), 
-*        Use after attaching CRC-16
+*        Use after attaching CRC-16. Good to send over uart after calling this one
 * @note This implementation should be able to support packets up to 254 bytes 
 * @param data Pointer to input data to encode 
 * @param length length of the input data 
@@ -217,9 +217,11 @@ size_t decodeCOBS(const uint8_t* buffer, size_t length, void* data);
 size_t convert_to_uart(const encoded_msg_t* inptr, size_t len, uint8_t* outptr);
 /**
  * @brief converts raw UART stuff back into an encoded message 
+ * @note you should call this function that passes a buffer within two COBS delimters (0x00)
  * @returns true if passed CRC16 and msg updated, false otherwise 
  */
 bool convert_from_uart(const uint8_t* inptr, size_t len, encoded_msg_t* outptr);
+
 #ifdef __cplusplus
 }
 #endif

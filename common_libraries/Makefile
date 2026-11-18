@@ -12,7 +12,7 @@ configure:
 	cmake -S . -B $(BUILD_DIR) -G Ninja 
 
 build: configure
-	cmake --build $(BUILD_DIR)
+	cmake --build $(BUILD_DIR) --parallel 
 
 clean:
 	cmake -E rm -rf $(BUILD_DIR)

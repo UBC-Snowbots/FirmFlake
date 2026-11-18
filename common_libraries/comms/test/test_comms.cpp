@@ -394,7 +394,6 @@ TEST_CASE("COBS matches the Wikipedia encoding examples (implementation + round 
     };
 
     for (size_t i = 0; i < unencoded.size(); ++i) {
-        // std::vector<uint8_t> encoded_output(getCOBSBufferSize(unencoded[i].size(), true));
         std::vector<uint8_t> encoded_output(encoded[i].size());
         const size_t encoded_len = encodeCOBS(
             unencoded[i].data(), 
@@ -410,11 +409,6 @@ TEST_CASE("COBS matches the Wikipedia encoding examples (implementation + round 
             encoded_output.size(),
             decoded_output.data()
         );
-        // const size_t decoded_len = decodeCOBS(
-        //     encoded_output.data(),
-        //     encoded_len,
-        //     decoded_output.data(),
-        //     decoded_output.size());
 
         REQUIRE(decoded_len == unencoded[i].size());
         REQUIRE(decoded_output == unencoded[i]);
@@ -431,21 +425,14 @@ TEST_CASE("COBS handles 254-byte and 255-byte blocks", "[comms][cobs][edge]")
         }
 
         std::vector<uint8_t> encoded(256); // !writing to data() doesnt grow the vector!!!!!
-        // std::vector<uint8_t> encoded(getCOBSBufferSize(input.size(), true));
         const size_t encoded_len = encodeCOBS(input.data(), input.size(), encoded.data());
-        // const size_t encoded_len = encodeCOBS(input.data(), input.size(),
-                                            //    encoded.data(), encoded.size(), true);
 
         REQUIRE(encoded_len == 256);
         REQUIRE(encoded[0] == 0xFF);
-        // INFO("byte = 0x" << std::hex
-        //     << static_cast<unsigned int>(encoded.rbegin()[1]));
         REQUIRE(encoded.back() == 0x00);
 
         std::vector<uint8_t> decoded(input.size());
         const size_t decoded_len = decodeCOBS(encoded.data(), encoded.size(), decoded.data());
-        // const size_t decoded_len = decodeCOBS(encoded.data(), encoded_len,
-        //                                        decoded.data(), decoded.size());
         REQUIRE(decoded_len == input.size());
         REQUIRE(decoded == input);
     }
@@ -459,7 +446,6 @@ TEST_CASE("COBS handles 254-byte and 255-byte blocks", "[comms][cobs][edge]")
         }
 
         std::vector<uint8_t> encoded(input.size() + 2); 
-        // std::vector<uint8_t> encoded(getCOBSBufferSize(input.size(), true));
         const size_t encoded_len = encodeCOBS(input.data(), input.size(), encoded.data());
 
         REQUIRE(encoded_len == 257);

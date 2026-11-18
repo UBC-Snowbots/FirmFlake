@@ -311,7 +311,6 @@ bool convert_from_raw(const uint8_t* raw_in, encoded_msg_t* out)
  TODO: figure out if memcpy is better 
 */
 size_t encodeCOBS(const void *data, size_t length, uint8_t *buffer) {
-    // assert(data && buffer); // originally this, idk why 
     if (!data || !buffer) return 0;
 
     uint8_t *encode = buffer; // encoded byte pointer 
@@ -338,9 +337,9 @@ size_t decodeCOBS(const uint8_t *buffer, size_t length, void *data) {
     const uint8_t *byte = buffer; // encoded input byte pointer 
     uint8_t *decode = (uint8_t *)data; // decoded output byte buffer 
 
-    for (uint8_t code = 0xff, block = 0; byte < buffer + length; --block)  // dafuq why is there so many params 
+    for (uint8_t code = 0xff, block = 0; byte < buffer + length; --block)
     {
-        if (block) // decode block byte, wtf is block?
+        if (block) 
             *decode++ = *byte++;
         else {
             block = *byte++;
@@ -354,8 +353,7 @@ size_t decodeCOBS(const uint8_t *buffer, size_t length, void *data) {
     return (size_t)(decode - (uint8_t *)data);
 }
 
-// TODO implement convert_to_can and convert_from_uart
-// [COBS overhead byte][raw message encoded][CRC16][0x00 delimiter] = 1 + 14 + 
+// [COBS overhead byte][raw message encoded][CRC16][0x00 delimiter] = 1 + 14 + 2 + 1 
 size_t convert_to_uart(const encoded_msg_t *inptr, size_t len, uint8_t *outptr) {
     if (!inptr || !outptr) return false; // reject nullptr's 
     uint8_t frame_buf[COMMS_UART_MSG_SIZE]; // issa fixed length 
@@ -372,7 +370,7 @@ size_t convert_to_uart(const encoded_msg_t *inptr, size_t len, uint8_t *outptr) 
 bool convert_from_uart(const uint8_t *inptr, size_t len, encoded_msg_t *outptr) {
     if (!inptr || !outptr || len < COMMS_UART_MSG_SIZE) return false;
 
-    // Decode COBS frame (16 bytes -> 14 bytes: 12-byte raw frame + 2-byte CRC16)
+    // COBS frame (16 bytes -> 14 bytes: 12-byte raw frame + 2-byte CRC16)
     uint8_t raw_with_crc[COMMS_RAW_MSG_SIZE + COMMS_CRC16_SIZE];
     size_t decoded_len = decodeCOBS(inptr, len, raw_with_crc);
     if (decoded_len != sizeof(raw_with_crc)) return false;
