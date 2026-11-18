@@ -29,6 +29,8 @@ static_assert(sizeof(float) == 4, "Comms requires 32-bit floats");
 #define COMMS_CAN_EXT_ID_MASK  0x1FFFFFFFu  // Mask to 29 bits
 #define COMMS_INVALID_DEVICE_ID 0x1FFFu     // Set as default. 
 
+#define COMMS_CRC16_SIZE 2u
+#define COMMS_UART_MSG_SIZE (1u + COMMS_RAW_MSG_SIZE + COMMS_CRC16_SIZE + 1u) // COBS overhead + that thing + delimiter
 
 #define PING_RESERVED_1 0xBEEFu //idk
 #define PING_RESERVED_2 0xABBAu //idk
@@ -199,10 +201,6 @@ size_t getCOBSBufferSize(size_t input_size, bool with_trailing_zero);
 */
 size_t encodeCOBS(const void *data, size_t length, uint8_t *buffer);
 
-// size_t encodeCOBS(  const uint8_t *inptr, size_t inputlen, 
-//                     uint8_t *outptr, size_t outlen,
-//                     bool add_trailing_zero);
-
 /**
 * @brief decode buffer of bytes using COBS, only rly decides if a frame is valid or nah 
 * @param buffer Pointer to encoded bytes 
@@ -211,18 +209,17 @@ size_t encodeCOBS(const void *data, size_t length, uint8_t *buffer);
 * @retval number of bytes written to output buffer 
 */
 size_t decodeCOBS(const uint8_t* buffer, size_t length, void* data);
-// size_t decodeCOBS(  const uint8_t* inptr, size_t inputlen,
-//                     uint8_t* outptr, size_t outputlen);
-
 
 /**
  * @brief converts an encoded messsage (struct) to shit u can put directly onto UART
+ * @retval len of fully uart framed message 
  */
-bool convert_to_uart(   encoded_msg_t* inptr, const uint8_t* outptr);
+size_t convert_to_uart(const encoded_msg_t* inptr, size_t len, uint8_t* outptr);
 /**
  * @brief converts raw UART stuff back into an encoded message 
+ * @returns true if passed CRC16 and msg updated, false otherwise 
  */
-bool convert_from_uart( const encoded_msg_t* inptr, const uint8_t* outptr);
+bool convert_from_uart(const uint8_t* inptr, size_t len, encoded_msg_t* outptr);
 #ifdef __cplusplus
 }
 #endif

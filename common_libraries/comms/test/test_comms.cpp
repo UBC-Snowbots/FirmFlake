@@ -473,3 +473,61 @@ TEST_CASE("COBS handles 254-byte and 255-byte blocks", "[comms][cobs][edge]")
         REQUIRE(decoded == input);
     }
 }
+TEST_CASE("payload survives the UART round trip", "[comms][uart]") 
+{
+    use_test_device_id();
+
+    msg_t in = make_msg(MSG_TYPE__SET_LED_PWM);
+    in.payload.led_panel_cmd.led_panel_index = 12u;
+    in.payload.led_panel_cmd.panel_percent   = 88.25f;
+
+    encoded_msg_t enc{};
+    REQUIRE(encode(&in, &enc));
+
+    uint8_t tx_buffer[64]{};
+    const size_t tx_len = convert_to_uart(&enc, enc.payload_len, tx_buffer);
+    REQUIRE(tx_len > 0);
+    REQUIRE(tx_len <= COMMS_UART_MSG_SIZE);
+
+    encoded_msg_t back{};
+    REQUIRE(convert_from_uart(tx_buffer, tx_len, &back));
+    REQUIRE(back.id == enc.id);
+    REQUIRE(back.payload_len == enc.payload_len);
+
+    msg_t out{};
+    REQUIRE(decode(&back, &out));
+    REQUIRE(out.type == MSG_TYPE__SET_LED_PWM);
+    REQUIRE(out.sender_id == kTestDeviceId);
+    REQUIRE(out.payload.led_panel_cmd.led_panel_index == 12u);
+    REQUIRE_THAT(out.payload.led_panel_cmd.panel_percent, WithinRel(88.25f));
+}
+
+TEST_CASE("corrupted payload gets 2016 game 7 LBJ'd", "[comms][uart]") 
+{
+    use_test_device_id();
+
+    msg_t in = make_msg(MSG_TYPE__SET_LED_PWM);
+    in.payload.led_panel_cmd.led_panel_index = 12u;
+    in.payload.led_panel_cmd.panel_percent = 88.25f;
+
+    encoded_msg_t enc{};
+    REQUIRE(encode(&in, &enc));
+
+    uint8_t frame[64]{};
+    const size_t frame_len = convert_to_uart(&enc, enc.payload_len, frame);
+    REQUIRE(frame_len > 0);
+
+    encoded_msg_t received{};
+    REQUIRE(convert_from_uart(frame, frame_len, &received));
+
+    // Keep the checksum intact and re-encode so the COBS framing stays valid.
+    uint8_t raw[64]{};
+    const size_t raw_len = decodeCOBS(frame, frame_len, raw);
+    REQUIRE(raw_len > 2);
+    raw[raw_len - 3] ^= 0x01u;
+
+    uint8_t corrupted[64]{};
+    const size_t corrupted_len = encodeCOBS(raw, raw_len, corrupted);
+    REQUIRE(corrupted_len > 0);
+    REQUIRE_FALSE(convert_from_uart(corrupted, corrupted_len, &received));
+}
