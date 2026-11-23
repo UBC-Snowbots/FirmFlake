@@ -59,26 +59,34 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${COMMON_LIBS_PATH}/clock/stopwatch.cpp
     ${COMMON_LIBS_PATH}/clock/timer.cpp
     ${COMMON_LIBS_PATH}/comms/comms.c
-    ${PLATFORM_PATH}/Modules/can/can_stm32g4xx.cpp
+    ${COMMON_LIBS_PATH}/crc/crc.c
+    ${COMMON_LIBS_PATH}/uart/uart_interface.h
+    ${COMMON_LIBS_PATH}/utils/ring_buffer.h
 
     # --- Platform modules (STM32G4xx implementations of the common interfaces) ---
     ${PLATFORM_PATH}/Modules/clock/clock_stm32g4xx.cpp
     ${PLATFORM_PATH}/Modules/primitive_io/primitive_io_stm32g4xx.cpp
+    ${PLATFORM_PATH}/Modules/uart/uart_stm32g4xx.cpp
+    ${PLATFORM_PATH}/Modules/can/can_stm32g4xx.cpp
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${COMMON_LIBS_PATH}/clock
     ${COMMON_LIBS_PATH}/can
+    ${COMMON_LIBS_PATH}/uart
+    ${COMMON_LIBS_PATH}/crc
     ${COMMON_LIBS_PATH}/comms
     ${COMMON_LIBS_PATH}/primitive_io
     ${COMMON_LIBS_PATH}/servo
     ${COMMON_LIBS_PATH}/usr_leds
     ${COMMON_LIBS_PATH}/sensors
+    ${COMMON_LIBS_PATH}/utils
     ${PLATFORM_PATH}/Modules/can
     ${PLATFORM_PATH}/Modules/clock
     ${PLATFORM_PATH}/Modules/primitive_io
     ${PLATFORM_PATH}/Modules/servo
+    ${PLATFORM_PATH}/Modules/uart
 )
 
 # Add project symbols (macros)

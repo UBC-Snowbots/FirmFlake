@@ -20,8 +20,6 @@
 #include "main.h"
 #include "adc.h"
 #include "fdcan.h"
-#include "stm32g4xx_hal_adc_ex.h"
-#include "stm32g4xx_hal_gpio.h"
 #include "usart.h"
 #include "usb.h"
 #include "gpio.h"
@@ -108,6 +106,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
     HAL_GPIO_WritePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin, GPIO_PIN_SET);
 

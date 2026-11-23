@@ -9,7 +9,9 @@ BUILD_DIR := build
 all: build test
 
 configure:
-	cmake -S . -B $(BUILD_DIR) -G Ninja 
+	cmake -S . -B $(BUILD_DIR) -G Ninja \
+        -DCMAKE_C_COMPILER=$(CC) \
+        -DCMAKE_CXX_COMPILER=$(CXX)
 
 build: configure
 	cmake --build $(BUILD_DIR) --parallel 
