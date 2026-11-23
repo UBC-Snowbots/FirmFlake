@@ -8,9 +8,6 @@
 #include "stm32g4xx_hal.h"
 
 // Fixed around interrupt-based reading for now 
-// TODO: add support for DMA (and maybe polling based)
-
-// size of the UART buffer 
 constexpr size_t UART_RING_BUFFER_LENGTH = 512;
 using UartMessageHandler =  void (*)(const msg_t& message);
 
@@ -35,8 +32,6 @@ class UartSTM32G4XX : public UartInterface {
         UART_HandleTypeDef& handle_;
         uint8_t rx_byte_; 
 
-        // uint8_t rx_dma_buffer_[UART_DMA_RXBUFFER_LENGTH];
-        // size_t rx_read_pos_ = 0; 
         UartRxBuffer<UART_RING_BUFFER_LENGTH> rx_ring_;
         RingBuffer<COMMS_UART_MSG_SIZE> FrameBuf; // for frame constructing
         UartMessageHandler message_handler_;

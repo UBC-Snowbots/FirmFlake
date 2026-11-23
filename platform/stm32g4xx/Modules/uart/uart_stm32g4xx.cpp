@@ -80,27 +80,6 @@ void UartSTM32G4XX::dispatch(const msg_t& message) {
     }
 }
 
-/*
-Dispatch Example:
-void dispatch_message(const msg_t& message) {
-    switch (message.type) {
-        case MSG_TYPE__HEARTBEAT:
-            // Handle heartbeat
-            break;
-
-        case MSG_TYPE__PTZ_VEL_CMD:
-            // Handle PTZ command
-            break;
-
-        default:
-            break;
-    }
-}
-then construction:
-UartSTM32G4XX uart(huart4, dispatch_message);
-*/
-
-
 // ------------- UART Send ----------------
 /**
  * @returns true if successful; false otherwise. 
