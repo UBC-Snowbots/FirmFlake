@@ -98,6 +98,8 @@ extern "C" void app_main(void)
 {
   /* UART Init */
   uart4.init();
+  comms_set_device_id(DEVICE_ID__MINI_ROVER); // encode() refuses to send without this
+
 
   /* ADC Init */
   ADC_Data v_bat = {0};
