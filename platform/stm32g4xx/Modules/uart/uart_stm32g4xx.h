@@ -28,8 +28,9 @@ class UartSTM32G4XX : public UartInterface {
         UartStatus send(const uint8_t* data, size_t length) override;
         UartStatus read(uint8_t& byte) override;
         UartStatus process_rxbuf(); // polls Rx buffer until its empty 
+
         void dispatch(const msg_t& message);
-        void rx_interrupt_callback(uint8_t byte);
+        void rx_interrupt_callback();
     private:
         UART_HandleTypeDef& handle_;
         uint8_t rx_byte_; 
@@ -40,3 +41,5 @@ class UartSTM32G4XX : public UartInterface {
         RingBuffer<COMMS_UART_MSG_SIZE> FrameBuf; // for frame constructing
         UartMessageHandler message_handler_;
 };
+
+bool send_message(UartInterface& uart, const msg_t& message);

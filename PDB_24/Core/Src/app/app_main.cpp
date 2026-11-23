@@ -2,12 +2,14 @@
 #include "adc.h"
 #include "main.h"
 #include "fdcan.h"
-#include "can_stm32g4xx.h"
+#include "usart.h"
+// #include "can_stm32g4xx.h"
 #include "stm32g4xx_hal_adc_ex.h"
 #include <comms.h>
 #include <primitive_io_stm32g4xx.hpp>
 #include <timer.hpp>
 #include <clock_stm32g4xx.hpp>
+#include <uart_stm32g4xx.h>
 
 constexpr float ADC_RESOLUTION_FACTOR = ((1UL << 16) - 1);
 
@@ -28,6 +30,24 @@ float current_time;
 ClockSTM32G4XX clock;
 Timer minute_timer(clock, true);
 Timer second_timer(clock, true);
+
+// UART 
+void uart_msg_handler(const msg_t&);
+UartSTM32G4XX uart4(huart4, uart_msg_handler);
+
+extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  if (huart->Instance == huart4.Instance) {
+    uart4.rx_interrupt_callback();
+  }
+}
+
+static void send_heartbeat(void)
+{
+    msg_t msg = {};
+    msg.type = MSG_TYPE__HEARTBEAT;
+    msg.payload.heartbeat.timestamp_ms = HAL_GetTick();
+    send_message(uart4, msg);
+}
 
 // TODO: move this thingy to some other thing, better software practice i think 
 struct ADC_Data {
@@ -76,6 +96,9 @@ struct ADC_Data {
 
 extern "C" void app_main(void)
 {
+  /* UART Init */
+  uart4.init();
+
   /* ADC Init */
   ADC_Data v_bat = {0};
   ADC_Data arm_current = {0};
@@ -132,6 +155,8 @@ extern "C" void app_main(void)
 
   while (1) 
   {
+    uart4.process_rxbuf();
+    send_heartbeat();
     // Run re-calibration every minute or so
     // This is to prevent temperature drift from affecting readings
     if (minute_timer.expired()) {
@@ -167,7 +192,14 @@ extern "C" void app_main(void)
   }
 }
 
-
+void uart_msg_handler(const msg_t& message) {
+  // balls 
+  switch (message.type) {
+    case(MSG_TYPE__HEARTBEAT): {
+      __NOP(); // put heartbeat here
+    }
+  }
+}
 
 #define VREFINT_SAMPLE_COUNT 32U
 /**

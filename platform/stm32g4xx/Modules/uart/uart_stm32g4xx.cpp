@@ -34,9 +34,9 @@ UartStatus UartSTM32G4XX::read(uint8_t& byte) {
 
 
 // ! double check this is okay. 
-void UartSTM32G4XX::rx_interrupt_callback(uint8_t byte)
+void UartSTM32G4XX::rx_interrupt_callback()
 {
-    rx_ring_.push(byte);
+    rx_ring_.push(rx_byte_);
     HAL_UART_Receive_IT(&handle_, &rx_byte_, 1);
 }
 
@@ -58,8 +58,8 @@ UartStatus UartSTM32G4XX::process_rxbuf() {
             size_t frame_length = FrameBuf.size();
             if (frame_length > 0 && frame_length <= COMMS_UART_MSG_SIZE) {
                 encoded_msg_t encoded{};
-                uint8_t raw_frame[COMMS_UART_MSG_SIZE];
-                const size_t frame_length = FrameBuf.copy_to(raw_frame, COMMS_UART_MSG_SIZE);
+                uint8_t raw_frame[COMMS_UART_MSG_SIZE]{};
+                frame_length = FrameBuf.copy_to(raw_frame, COMMS_UART_MSG_SIZE);
 
                 if (convert_from_uart(raw_frame, frame_length, &encoded)){
                     msg_t msg{};

@@ -8,14 +8,12 @@ author: Alan Cheng
 ## For use (application level):
 Install the Callback, example:
 ```cpp
-static UartSTM32G4XX* uart4_instance = nullptr;
-static UartSTM32G4XX* uart5_instance = nullptr;
+void uart_msg_handler(const msg_t&);
+UartSTM32G4XX uart4(huart4, uart_msg_handler);
 
-extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
-{
-    if (huart->Instance == UART4)
-        uart4_instance->rx_interrupt_callback(uart4_instance->rx_byte_);
-    else if (huart->Instance == UART5)
-        uart5_instance->rx_interrupt_callback(uart5_instance->rx_byte_);
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  if (huart->Instance == huart4.Instance) {
+    uart4.rx_interrupt_callback();
+  }
 }
 ```

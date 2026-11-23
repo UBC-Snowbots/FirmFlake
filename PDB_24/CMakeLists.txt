@@ -59,6 +59,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${COMMON_LIBS_PATH}/clock/stopwatch.cpp
     ${COMMON_LIBS_PATH}/clock/timer.cpp
     ${COMMON_LIBS_PATH}/comms/comms.c
+    ${COMMON_LIBS_PATH}/crc/crc.c
     ${COMMON_LIBS_PATH}/uart/uart_interface.h
     ${COMMON_LIBS_PATH}/utils/ring_buffer.h
 
