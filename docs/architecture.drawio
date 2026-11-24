@@ -1,0 +1,456 @@
+<mxfile host="Electron" agent="FirmFlake docs generator" pages="4">
+  <diagram id="overview" name="1. Overview">
+    <mxGraphModel dx="1426" dy="883" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="overview-title" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=4;" value="&lt;font style=&quot;font-size:22px&quot;&gt;&lt;b&gt;FirmFlake: how the code fits together&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;Hover any block for a longer explanation. Blocks marked ↗ open a more detailed page (click the link icon, or Ctrl+click).&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="900" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="band1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;opacity=35;verticalAlign=top;align=left;spacingLeft=88;spacingTop=4;fontSize=14;fontStyle=1;" value="① Projects" vertex="1">
+          <mxGeometry height="200" width="1080" x="20" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="band1s" parent="1" style="text;html=1;align=right;verticalAlign=top;fontColor=#555555;fontSize=12;fontStyle=2;" value="Where the main functions resides. (Program entry points)" vertex="1">
+          <mxGeometry height="22" width="490" x="600" y="103" as="geometry" />
+        </mxCell>
+        <mxCell id="band2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;opacity=35;verticalAlign=top;align=left;spacingLeft=88;spacingTop=4;fontSize=14;fontStyle=1;" value="② common_libraries/" vertex="1">
+          <mxGeometry height="170" width="1080" x="20" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="band2s" parent="1" style="text;html=1;align=right;verticalAlign=top;fontColor=#555555;fontSize=12;fontStyle=2;" value="hardware-agnostic: works on any chip, or on a PC" vertex="1">
+          <mxGeometry height="22" width="490" x="600" y="323" as="geometry" />
+        </mxCell>
+        <mxCell id="band3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;opacity=35;verticalAlign=top;align=left;spacingLeft=88;spacingTop=4;fontSize=14;fontStyle=1;" value="③ platform/stm32g4xx/" vertex="1">
+          <mxGeometry height="170" width="1080" x="20" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="band3s" parent="1" style="text;html=1;align=right;verticalAlign=top;fontColor=#555555;fontSize=12;fontStyle=2;" value="hardware-specific: only works on STM32G4 chips" vertex="1">
+          <mxGeometry height="22" width="490" x="600" y="513" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;STM32 board project&lt;/b&gt;&lt;br&gt;&lt;i&gt;e.g. mini_rover_stm32g431cbu6/, PDB_24/&lt;/i&gt;&lt;br&gt;&lt;br&gt;One folder per circuit board.&lt;br&gt;Holds the app code, pin setup, and build files." tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;STM32 board project (one folder per PCB)&lt;br&gt;&lt;br&gt;Contains only what is unique to that board:&lt;br&gt;• Core/Src/app/app_main.cpp: the application (what this board does)&lt;br&gt;• CubeMX generated files (main.c, gpio.c, fdcan.c ...): chip setup produced by STM32CubeMX from the .ioc file&lt;br&gt;• platform_defs.h / pinout_defs: which pin is wired to what on this PCB&lt;br&gt;• startup .s file + linker script .ld: how the program is laid out in the chip&#39;s flash/RAM&lt;br&gt;• Makefile + CMakeLists.txt: how to build and flash it&lt;br&gt;&lt;br&gt;Everything reusable is pulled in from common_libraries/ and platform/ instead of being copied.&lt;/div&gt;" id="stm32">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=6;spacing=8;align=left;spacingRight=240;" vertex="1">
+            <mxGeometry height="150" width="500" x="110" y="135" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;Makefile&lt;/b&gt; ↗&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Shortcuts: &lt;i&gt;make build&lt;/i&gt;, &lt;i&gt;make flash&lt;/i&gt;&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Makefile: a list of shortcut commands.&lt;br&gt;&lt;br&gt;Here it is only a thin wrapper: `make build` runs the longer cmake commands for you, `make flash` builds then writes the program onto the board with st-flash.&lt;br&gt;The real build logic is in CMakeLists.txt.&lt;br&gt;&lt;br&gt;(Open the link for the full build flow.)&lt;/div&gt;" link="data:page/id,build" id="make">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=6;spacing=8;spacingTop=2;" vertex="1">
+            <mxGeometry height="50" width="210" x="380" y="147" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;CMakeLists.txt&lt;/b&gt; ↗&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Picks which files get compiled&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;CMakeLists.txt: the build recipe.&lt;br&gt;&lt;br&gt;Tells CMake which .c/.cpp files to compile (target_sources), which folders to search for #include headers (target_include_directories), and which compiler to use (the toolchain file).&lt;br&gt;&lt;br&gt;This is where a board &#39;chooses&#39; its pieces: it lists app code from its own folder, generic code from common_libraries/, and the STM32 implementations from platform/.&lt;br&gt;&lt;br&gt;(Open the link for the full build flow.)&lt;/div&gt;" link="data:page/id,build" id="cmake">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=6;spacing=8;spacingTop=2;" vertex="1">
+            <mxGeometry height="50" width="210" x="380" y="223" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="e-make-cmake" edge="1" parent="1" source="make" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="cmake" value="runs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;RoverFlake2 repo&lt;/b&gt; &lt;font color=&quot;#666666&quot;&gt;(separate repo, FirmFlake is a git submodule in it)&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;RoverFlake2 is the main rover software repo (ROS2, runs on the rover&#39;s onboard computer).&lt;br&gt;&lt;br&gt;It includes FirmFlake as a git submodule at RoverFlake2/FirmFlake, so its packages can reach into FirmFlake/common_libraries/ with a relative path.&lt;/div&gt;" id="rf2">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffffff;strokeColor=#9673a6;verticalAlign=top;spacingTop=6;spacing=8;dashed=1;align=left;" vertex="1">
+            <mxGeometry height="150" width="420" x="650" y="135" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;ROS2 node&lt;/b&gt;&lt;br&gt;&lt;i&gt;e.g. arm_hardware_interface, rover_hmi&lt;/i&gt;&lt;br&gt;&lt;br&gt;Runs on the rover&#39;s Linux computer, not a microcontroller." tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;ROS2 node (C++ on Linux)&lt;br&gt;&lt;br&gt;Talks to the microcontroller boards over serial/CAN. To agree on the message format, it compiles the SAME comms code the boards use (common_libraries/comms), pointing its own CMakeLists.txt at ../../FirmFlake/common_libraries/comms.&lt;br&gt;&lt;br&gt;It can do that only because common_libraries is hardware-agnostic. It never uses platform/ (that code needs an STM32).&lt;/div&gt;" id="ros">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;spacingTop=6;spacing=8;align=left;" vertex="1">
+            <mxGeometry height="90" width="380" x="670" y="180" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;Interfaces&lt;/b&gt; ↗&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;&quot;&lt;b&gt;What&lt;/b&gt; a part can do&quot;, no hardware code&lt;br&gt;&lt;br&gt;&lt;i&gt;clock_interface, can_interface, primitive_io_base, servo_interface, sensor_interface&lt;/i&gt;&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Interface: a promise of what something can do, with no code that does it.&lt;br&gt;&lt;br&gt;e.g. ClockInterface says &#39;a clock has get_ms() and blocking_delay()&#39;, but says nothing about HOW (no STM32, no HAL).&lt;br&gt;&lt;br&gt;In C++ these are classes whose functions are all &#39;pure virtual&#39; (= 0).&lt;br&gt;&lt;br&gt;(Open the link for the clock_interface vs clock_stm32g4xx example.)&lt;/div&gt;" link="data:page/id,iface" id="iface">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=6;spacing=8;align=left;" vertex="1">
+            <mxGeometry height="115" width="270" x="110" y="355" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;Generic libraries&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Logic that works anywhere&lt;br&gt;&lt;br&gt;&lt;i&gt;timer, stopwatch, comms, crc, low_pass_fir_filter, usr_led&lt;/i&gt;&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Generic (hardware-agnostic) libraries: real working code, but no chip-specific calls.&lt;br&gt;&lt;br&gt;When they need hardware, they ask for an interface instead. e.g. Timer takes a ClockInterface&amp;amp;, so the same timer.cpp works on an STM32, an ESP32, or in a PC unit test.&lt;br&gt;&lt;br&gt;comms/ and crc/ need no hardware at all, which is why RoverFlake2 can reuse them.&lt;/div&gt;" id="generic">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=6;spacing=8;align=left;" vertex="1">
+            <mxGeometry height="115" width="290" x="430" y="355" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;Unit tests (Catch2)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Run on your PC and in GitHub CI on every push&lt;br&gt;&lt;i&gt;own Makefile + CMakeLists&lt;/i&gt;&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;common_libraries/ has its own Makefile + CMakeLists.txt, but they do NOT build firmware.&lt;br&gt;&lt;br&gt;They compile the libraries with your normal PC compiler (g++) together with the */test/test_*.cpp files, and run them with Catch2.&lt;br&gt;&lt;br&gt;`cd common_libraries &amp;amp;&amp;amp; make test`&lt;br&gt;&lt;br&gt;GitHub Actions (.github/workflows/build_and_test_common_libs.yaml) runs the same command on every push.&lt;/div&gt;" id="tests">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#f5f5f5;strokeColor=#999999;verticalAlign=top;spacingTop=6;spacing=8;align=left;" vertex="1">
+            <mxGeometry height="115" width="290" x="780" y="355" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="e-tests" edge="1" parent="1" source="tests" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=open;endFill=0;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="generic" value="tests">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;Implementations&lt;/b&gt; ↗ &lt;font style=&quot;font-size:11px&quot;&gt;(Modules/)&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;&quot;&lt;b&gt;How&lt;/b&gt; to do it on an STM32G4&quot;&lt;br&gt;&lt;br&gt;&lt;i&gt;clock_stm32g4xx, can_stm32g4xx, primitive_io_stm32g4xx, servo_stm32g4xx&lt;/i&gt;&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Implementation: the code that keeps an interface&#39;s promise on real hardware.&lt;br&gt;&lt;br&gt;e.g. ClockSTM32G4XX inherits from ClockInterface and fills in get_ms() by calling ST&#39;s HAL_GetTick().&lt;br&gt;&lt;br&gt;Naming: &amp;lt;thing&amp;gt;_&amp;lt;platform&amp;gt;. A future chip would get platform/&amp;lt;chip&amp;gt;/Modules/... with the same interfaces.&lt;br&gt;&lt;br&gt;(Open the link for the full example.)&lt;/div&gt;" link="data:page/id,iface" id="impl">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;spacingTop=6;spacing=8;align=left;" vertex="1">
+            <mxGeometry height="115" width="270" x="110" y="545" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;HAL_Drivers&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;ST&#39;s own driver code (HAL + CMSIS).&lt;br&gt;One shared copy for every G4 board.&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;HAL = Hardware Abstraction Layer, written by ST (the chip maker).&lt;br&gt;CMSIS = ARM&#39;s standard headers for Cortex-M cores.&lt;br&gt;&lt;br&gt;Functions like HAL_GetTick(), HAL_GPIO_WritePin(), HAL_FDCAN_AddMessageToTxFifoQ().&lt;br&gt;&lt;br&gt;Kept once in platform/stm32g4xx/HAL_Drivers/ instead of a copy inside every board project. Each board&#39;s cmake/stm32cubemx/CMakeLists.txt points here.&lt;/div&gt;" id="hal">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;spacingTop=6;spacing=8;align=left;" vertex="1">
+            <mxGeometry height="115" width="290" x="430" y="545" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="rule" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;spacingTop=6;spacing=8;align=left;" value="&lt;b&gt;Rule of thumb&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Touches HAL / registers / a specific chip? → &lt;b&gt;platform/&lt;/b&gt;&lt;br&gt;Otherwise → &lt;b&gt;common_libraries/&lt;/b&gt; (and give it a unit test)&lt;br&gt;&lt;br&gt;Platform layer should be as &quot;thin&quot; as possible. This lets us switch hardware with minimal code changes.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="115" width="290" x="780" y="545" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stm32-generic" edge="1" parent="1" source="stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.82;exitY=1;exitDx=0;exitDy=0;entryX=0.31;entryY=0;entryDx=0;entryDy=0;" target="generic" value="uses">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stm32-impl" edge="1" parent="1" source="stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="impl" value="uses">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="65" y="210" />
+              <mxPoint x="65" y="602" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-ros-generic" edge="1" parent="1" source="ros" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.079;exitY=1;exitDx=0;exitDy=0;entryX=0.931;entryY=0;entryDx=0;entryDy=0;" target="generic" value="uses comms/ only">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-generic-iface" edge="1" parent="1" source="generic" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=open;endFill=0;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.094;exitY=-0.004;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.883;entryY=-0.004;entryDx=0;entryDy=0;entryPerimeter=0;" target="iface" value="implements">
+          <mxGeometry relative="1" x="0.0445" y="-15" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-impl-iface" edge="1" parent="1" source="impl" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=block;endFill=0;endSize=12;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.889;exitY=0;exitDx=0;exitDy=0;entryX=0.889;entryY=1;entryDx=0;entryDy=0;" target="iface" value="implements">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-impl-hal" edge="1" parent="1" source="impl" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="hal" value="calls">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="text;" value="" vertex="1">
+          <mxGeometry height="1" width="1" x="130" y="715" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="text;" value="" vertex="1">
+          <mxGeometry height="1" width="1" x="210" y="715" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="text;" value="" vertex="1">
+          <mxGeometry height="1" width="1" x="380" y="715" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" parent="1" style="text;" value="" vertex="1">
+          <mxGeometry height="1" width="1" x="460" y="715" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" parent="1" style="text;" value="" vertex="1">
+          <mxGeometry height="1" width="1" x="700" y="715" as="geometry" />
+        </mxCell>
+        <mxCell id="lg6" parent="1" style="text;" value="" vertex="1">
+          <mxGeometry height="1" width="1" x="780" y="715" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="build" name="2. Build: Makefile → CMake → firmware">
+    <mxGraphModel dx="1396" dy="808" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="build-title" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=4;" value="&lt;font style=&quot;font-size:22px&quot;&gt;&lt;b&gt;From source code to a flashed board&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;Example: mini_rover_stm32g431cbu6/. PDB_24 works the same way. Hover for details.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="900" x="40" y="20" as="geometry" />
+        </mxCell>
+        <UserObject label="← back to overview" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Click (or Ctrl+click while editing) to go back to the overview page.&lt;/div&gt;" link="data:page/id,overview" id="build-back">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1">
+            <mxGeometry height="30" width="120" x="960" y="30" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;You&lt;/b&gt;&lt;br&gt;&lt;font face=&quot;Courier New&quot;&gt;make build&lt;/font&gt;&lt;br&gt;&lt;font face=&quot;Courier New&quot;&gt;make flash&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;You run this in the board&#39;s folder. `make help` lists the targets.&lt;/div&gt;" id="s1">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#f5f5f5;strokeColor=#999999;verticalAlign=top;spacingTop=6;spacing=8;" vertex="1">
+            <mxGeometry height="110" width="180" x="40" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;Makefile&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Shortcut list. Runs the long cmake commands for you.&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Makefile targets (mini_rover):&lt;br&gt;• configure: cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=Debug&lt;br&gt;• build: configure, then cmake --build build&lt;br&gt;• flash: build, then st-flash ... write build/mini_rover.bin 0x08000000&lt;br&gt;• flash-ocd: same but with OpenOCD&lt;br&gt;• clean / rebuild&lt;br&gt;&lt;br&gt;Make itself is a decades-old tool: a target name, what it depends on, and the shell commands to run.&lt;/div&gt;" id="s2">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=6;spacing=8;" vertex="1">
+            <mxGeometry height="110" width="180" x="255" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="bs1" edge="1" parent="1" source="s1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="s2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;CMake&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Reads CMakeLists.txt.&lt;br&gt;Decides &lt;i&gt;what&lt;/i&gt; to compile and &lt;i&gt;how&lt;/i&gt;.&lt;br&gt;Writes build/build.ninja&lt;br&gt;&lt;i&gt;(configure: no compiling yet)&lt;/i&gt;&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;CMake is a build-system generator: it doesn&#39;t compile anything itself.&lt;br&gt;&lt;br&gt;It reads:&lt;br&gt;• CMakeLists.txt (your sources + include folders, see below)&lt;br&gt;• cmake/stm32cubemx/CMakeLists.txt (CubeMX&#39;s file list + HAL_Drivers)&lt;br&gt;• cmake/gcc-arm-none-eabi.cmake (the toolchain file: use the ARM cross-compiler and chip flags)&lt;br&gt;&lt;br&gt;...and writes instructions for Ninja into build/build.ninja.&lt;br&gt;&lt;br&gt;This is the CONFIGURE step. It doesn&#39;t compile anything; it only plans the build. (build/ is just the output folder&#39;s name.)&lt;/div&gt;" id="s3">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=6;spacing=8;" vertex="1">
+            <mxGeometry height="110" width="180" x="470" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="bs2" edge="1" parent="1" source="s2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="s3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;Ninja + arm-none-eabi-gcc&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;&lt;i&gt;(build: the actual compiling)&lt;/i&gt;&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Compiles every .c/.cpp → .o, links them into &lt;i&gt;mini_rover.elf&lt;/i&gt;&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Ninja runs the compiler commands, only re-compiling files that changed.&lt;br&gt;&lt;br&gt;arm-none-eabi-gcc is a CROSS-compiler: it runs on your PC but produces machine code for the STM32&#39;s ARM Cortex-M4 core.&lt;br&gt;&lt;br&gt;.o = one compiled file. Linking glues all .o files into one program (.elf), using the linker script (.ld) to place code in flash and variables in RAM.&lt;/div&gt;" id="s4">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#f5f5f5;strokeColor=#999999;verticalAlign=top;spacingTop=6;spacing=8;" vertex="1">
+            <mxGeometry height="110" width="180" x="685" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="bs3" edge="1" parent="1" source="s3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="s4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;.elf → .bin → board&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;objcopy strips it to raw bytes; st-flash writes them over the ST-Link&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;.elf: the program plus debug info (what a debugger uses).&lt;br&gt;.bin: just the raw bytes that go into flash, made by objcopy (POST_BUILD step at the bottom of CMakeLists.txt).&lt;br&gt;&lt;br&gt;`make flash` uses st-flash to write the .bin to address 0x08000000 (start of STM32 flash) over an ST-Link programmer.&lt;/div&gt;" id="s5">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#f5f5f5;strokeColor=#999999;verticalAlign=top;spacingTop=6;spacing=8;" vertex="1">
+            <mxGeometry height="110" width="180" x="900" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="bs4" edge="1" parent="1" source="s4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="s5" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cml" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffffff;strokeColor=#666666;verticalAlign=top;spacingTop=6;spacing=8;align=left;" value="&lt;b&gt;Inside a board&#39;s CMakeLists.txt&lt;/b&gt;: the parts you edit most&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="330" width="640" x="40" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="cml1" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=4;" value="&lt;b&gt;target_sources(...)&lt;/b&gt;: which .c/.cpp files get compiled" vertex="1">
+          <mxGeometry height="25" width="600" x="60" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="cmlA" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=6;spacing=8;spacingTop=2;" value="&lt;font face=&quot;Courier New&quot; style=&quot;font-size:11px&quot;&gt;Core/Src/app/app_main.cpp&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;this board&#39;s app&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="190" x="60" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="cmlB" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=6;spacing=8;spacingTop=2;" value="&lt;font face=&quot;Courier New&quot; style=&quot;font-size:10px&quot;&gt;${COMMON_LIBS_PATH}/&lt;br&gt;clock/timer.cpp&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;generic libs&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="190" x="265" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="cmlC" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;spacingTop=6;spacing=8;spacingTop=2;" value="&lt;font face=&quot;Courier New&quot; style=&quot;font-size:10px&quot;&gt;${PLATFORM_PATH}/Modules/&lt;br&gt;clock/clock_stm32g4xx.cpp&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;STM32 implementations&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="190" x="470" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="cml2" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=4;" value="&lt;b&gt;target_include_directories(...)&lt;/b&gt;: folders searched when code says &lt;font face=&quot;Courier New&quot;&gt;#include &quot;timer.hpp&quot;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="25" width="600" x="60" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="cmlD" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=6;spacing=8;spacingTop=2;" value="&lt;font face=&quot;Courier New&quot; style=&quot;font-size:11px&quot;&gt;Core/Inc/...&lt;/font&gt;" vertex="1">
+          <mxGeometry height="48" width="190" x="60" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="cmlE" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=6;spacing=8;spacingTop=2;" value="&lt;font face=&quot;Courier New&quot; style=&quot;font-size:10px&quot;&gt;${COMMON_LIBS_PATH}/&lt;br&gt;clock&lt;/font&gt;" vertex="1">
+          <mxGeometry height="48" width="190" x="265" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="cmlF" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;spacingTop=6;spacing=8;spacingTop=2;" value="&lt;font face=&quot;Courier New&quot; style=&quot;font-size:10px&quot;&gt;${PLATFORM_PATH}/&lt;br&gt;Modules/clock&lt;/font&gt;" vertex="1">
+          <mxGeometry height="48" width="190" x="470" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="cml3" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=4;" value="&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;Adding a library to a board&lt;/b&gt; = add its .cpp to target_sources &lt;i&gt;and&lt;/i&gt; its folder to target_include_directories. A .cpp that isn&#39;t listed is never compiled (you&#39;ll get an &#39;undefined reference&#39; link error). A folder that isn&#39;t listed gives &#39;No such file or directory&#39; on #include.&lt;br&gt;&lt;br&gt;Paths at the top: &lt;font face=&quot;Courier New&quot;&gt;COMMON_LIBS_PATH&lt;/font&gt; = ../common_libraries, &lt;font face=&quot;Courier New&quot;&gt;PLATFORM_PATH&lt;/font&gt; = ../platform/stm32g4xx&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;This can be simplified with a common cmakelists that just includes all common libraries by default...&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="600" x="60" y="490" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;common_libraries/ has its own Makefile + CMakeLists&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;...but they build for &lt;b&gt;your PC&lt;/b&gt;, not a board:&lt;br&gt;&lt;br&gt;&lt;font face=&quot;Courier New&quot;&gt;cd common_libraries&lt;br&gt;make test&lt;/font&gt;&lt;br&gt;&lt;br&gt;→ compiles the libraries + every test/test_*.cpp with g++&lt;br&gt;→ links Catch2 (submodules/Catch2)&lt;br&gt;→ runs them with ctest&lt;br&gt;&lt;br&gt;GitHub Actions runs this on every push. Board projects &lt;b&gt;don&#39;t&lt;/b&gt; use this CMakeLists. They list the common .cpp files themselves.&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Why two kinds of build?&lt;br&gt;&lt;br&gt;Firmware must be cross-compiled for the STM32 and can only run on the board.&lt;br&gt;Hardware-agnostic code can ALSO be compiled for your PC, where it is fast and easy to test automatically. That&#39;s the main payoff of keeping common_libraries free of HAL calls.&lt;/div&gt;" id="clb">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=6;spacing=8;align=left;" vertex="1">
+            <mxGeometry height="330" width="340" x="710" y="260" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="gloss" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;spacingTop=6;spacing=8;align=left;" value="&lt;b&gt;Jargon&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;Toolchain / cross-compiler&lt;/b&gt;: compiler that runs on your PC but outputs code for another CPU (arm-none-eabi-gcc).&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;Configure&lt;/b&gt; (&lt;i&gt;cmake -B build&lt;/i&gt;): CMake reads the CMakeLists and writes a to-do list for Ninja (build/build.ninja). &lt;u&gt;Nothing is compiled yet.&lt;/u&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;Build&lt;/b&gt; (&lt;i&gt;cmake --build build&lt;/i&gt;): runs Ninja, which actually calls the compiler. &lt;i&gt;make build&lt;/i&gt; does both.&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;Ninja&lt;/b&gt;: fast tool that runs the compile commands.&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;CMakePresets.json&lt;/b&gt;: saved configure settings, used by the VS Code CMake extension instead of the Makefile.&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;CubeMX&lt;/b&gt;: ST&#39;s tool that generates chip setup code from the .ioc file. Re-generating can overwrite files outside USER CODE blocks.&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="130" width="1010" x="40" y="610" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="iface" name="3. Interfaces vs implementations">
+    <mxGraphModel dx="1712" dy="1060" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="iface-title" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=4;" value="&lt;font style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Interfaces vs implementations: the clock example&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;Interface = WHAT (a promise). Implementation = HOW (on one specific chip). Generic code only ever talks to the interface.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="900" x="40" y="20" as="geometry" />
+        </mxCell>
+        <UserObject label="← back to overview" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Click (or Ctrl+click while editing) to go back to the overview page.&lt;/div&gt;" link="data:page/id,overview" id="iface-back">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1">
+            <mxGeometry height="30" width="120" x="960" y="30" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;font color=&quot;#666666&quot;&gt;«interface»&lt;/font&gt;&lt;br&gt;&lt;b&gt;ClockInterface&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;font face=&quot;Courier New&quot; style=&quot;font-size:11px&quot;&gt;virtual ClockStatus init() = 0;&lt;br&gt;virtual uint32_t get_ms() = 0;&lt;br&gt;virtual void blocking_delay(uint32_t ms) = 0;&lt;/font&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;common_libraries/clock/clock_interface.hpp&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;An interface (in C++: an abstract class).&lt;br&gt;&lt;br&gt;`virtual ... = 0` means PURE VIRTUAL: the function is declared but has no body here. You can&#39;t create a ClockInterface object directly, only an object of a class that fills these in.&lt;br&gt;&lt;br&gt;No #include of any STM32/HAL header, so this file compiles anywhere.&lt;/div&gt;" id="ci">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=6;spacing=8;align=left;spacingTop=4;" vertex="1">
+            <mxGeometry height="150" width="330" x="345" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;Timer&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;font face=&quot;Courier New&quot; style=&quot;font-size:11px&quot;&gt;Timer(ClockInterface&amp;amp; clock, ...);&lt;br&gt;set(ms) / expired() / restart()&lt;/font&gt;&lt;hr&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Only knows &quot;some clock&quot;. Never sees STM32 code.&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;common_libraries/clock/timer.hpp&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Generic library code.&lt;br&gt;&lt;br&gt;Timer stores a reference to a ClockInterface and calls clock.get_ms(). It doesn&#39;t know or care whether that&#39;s an STM32 SysTick, an ESP32 timer, or a fake clock in a unit test.&lt;br&gt;&lt;br&gt;Because of that, the same timer.cpp is compiled into every board.&lt;/div&gt;" id="timer">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=6;spacing=8;align=left;spacingTop=4;" vertex="1">
+            <mxGeometry height="150" width="290" x="760" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;ClockSTM32G4XX&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;: public ClockInterface&lt;/font&gt;&lt;/div&gt;&lt;hr&gt;&lt;font face=&quot;Courier New&quot; style=&quot;font-size:11px&quot;&gt;uint32_t get_ms() override {&lt;br&gt;&amp;nbsp;&amp;nbsp;return HAL_GetTick();&lt;br&gt;}&lt;/font&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;platform/stm32g4xx/Modules/clock/clock_stm32g4xx.cpp&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;An implementation.&lt;br&gt;&lt;br&gt;`: public ClockInterface` = inherits from the interface (&quot;I am a ClockInterface&quot;).&lt;br&gt;`override` = &quot;this is my body for one of the interface&#39;s functions&quot;; the compiler errors if the name/signature doesn&#39;t match.&lt;br&gt;&lt;br&gt;This is the ONLY place that calls ST&#39;s HAL_GetTick() / HAL_Delay(). It includes stm32g4xx_hal.h, which is why it lives in platform/, not common_libraries/.&lt;/div&gt;" id="cs">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;spacingTop=6;spacing=8;align=left;spacingTop=4;" vertex="1">
+            <mxGeometry height="150" width="330" x="345" y="360" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;ClockESP32&lt;/b&gt; / &lt;b&gt;FakeClock&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;: public ClockInterface&lt;/font&gt;&lt;/div&gt;&lt;hr&gt;&lt;font style=&quot;font-size:11px&quot;&gt;&lt;i&gt;Don&#39;t exist yet.&lt;/i&gt; Shows the payoff: add one of these and Timer works on a new chip, or in a PC unit test, with zero changes.&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;Hypothetical.&lt;br&gt;&lt;br&gt;• platform/esp32/Modules/clock/clock_esp32.cpp would make Timer usable on ESP32 boards.&lt;br&gt;• A FakeClock in a test file (get_ms() returns a number the test controls) would let Catch2 test Timer on your PC without any hardware or waiting.&lt;/div&gt;" id="fake">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffffff;strokeColor=#999999;verticalAlign=top;spacingTop=6;spacing=8;align=left;spacingTop=4;dashed=1;" vertex="1">
+            <mxGeometry height="150" width="270" x="40" y="360" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;div style=&quot;text-align:center&quot;&gt;&lt;b&gt;app_main.cpp&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;(PDB_24 board project)&lt;/font&gt;&lt;/div&gt;&lt;hr&gt;&lt;font face=&quot;Courier New&quot; style=&quot;font-size:11px&quot;&gt;ClockSTM32G4XX clock;&lt;br&gt;Timer minute_timer(clock, true);&lt;/font&gt;&lt;hr&gt;&lt;font style=&quot;font-size:11px&quot;&gt;The board picks the real implementation and hands it to the generic code. &lt;b&gt;Ideally, this only takes in interfaces, and doesn&#39;t rely on platform, so we can unit test it.&lt;/b&gt;&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;PDB_24/Core/Src/app/app_main.cpp lines 28-29.&lt;br&gt;&lt;br&gt;This is DEPENDENCY INJECTION: instead of Timer creating its own clock (and so being tied to STM32), the board creates the clock and passes (&#39;injects&#39;) it into Timer.&lt;br&gt;&lt;br&gt;The board project is the one place where &#39;which hardware?&#39; gets decided.&lt;/div&gt;" id="app">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=6;spacing=8;align=left;spacingTop=4;" vertex="1">
+            <mxGeometry height="150" width="290" x="760" y="360" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="ie1" edge="1" parent="1" source="cs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=block;endFill=0;endSize=12;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="ci" value="implements">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ie2" edge="1" parent="1" source="fake" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=block;endFill=0;endSize=12;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ci" value="implements">
+          <mxGeometry relative="1" x="-0.2464" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="175" y="185" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ie3" edge="1" parent="1" source="timer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=open;endFill=0;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="ci" value="uses">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ie4" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="cs" value="creates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ie5" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#ffffff;" target="timer" value="creates, passes&lt;br&gt;clock in">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ip-gloss" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;spacingTop=6;spacing=8;align=left;" value="&lt;b&gt;Jargon&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;Interface / abstract class&lt;/b&gt;: a class that only declares functions (all &lt;font face=&quot;Courier New&quot;&gt;= 0&lt;/font&gt;).&amp;nbsp;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;Pure virtual&lt;/b&gt;: a function with no body that subclasses must provide.&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;b&gt;I&lt;/b&gt;&lt;/font&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;mplementation / concrete class&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;: a subclass that provides every body.&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;override&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;: marks a function as filling in a virtual one (cpp keyword).&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;Hardware-agnostic&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;: doesn&#39;t depend on any specific chip.&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;Dependency injection&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;: passing in the thing you depend on rather than creating it yourself.&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size:12px&quot;&gt;&lt;br&gt;The pattern as a whole is often called a &lt;i&gt;hardware abstraction layer&lt;/i&gt;; ST&#39;s HAL is the same idea one level lower.&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="160" width="1010" x="40" y="550" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="blocks" name="4. Block diagram (modules)">
+    <mxGraphModel dx="1396" dy="808" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="b-title" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=4;" value="&lt;font style=&quot;font-size:22px&quot;&gt;&lt;b&gt;Block diagram: modules and how they link&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;Arrow A → B: A #includes / depends on B. Dashed = not compiled into any board yet. Hover a block for details. Generated by docs/gen_block_diagram.py from commit 32cfb63 on 2026-11-24. Do not hand-edit this page.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="1400" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="g-common" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;opacity=35;horizontal=0;verticalAlign=top;align=center;spacingTop=4;fontSize=14;" value="&lt;b&gt;common_libraries/&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size:12px&quot;&gt;hardware-agnostic: interfaces + generic code&lt;/i&gt;" vertex="1">
+          <mxGeometry height="330" width="1505" x="30" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="g-stm32g4xx" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;opacity=35;horizontal=0;verticalAlign=top;align=center;spacingTop=4;fontSize=14;" value="&lt;b&gt;platform/stm32g4xx/&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size:12px&quot;&gt;hardware-specific: STM32G4 implementations&lt;/i&gt;" vertex="1">
+          <mxGeometry height="250" width="1505" x="30" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="g-silicon" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;opacity=35;horizontal=0;verticalAlign=top;align=center;spacingTop=4;fontSize=14;" value="&lt;b&gt;STM32G4 silicon&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size:12px&quot;&gt;the chip itself&lt;/i&gt;" vertex="1">
+          <mxGeometry height="140" width="1505" x="30" y="770" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;b&gt;Peripheral registers (memory-mapped I/O)&lt;/b&gt; &amp;nbsp; &lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;addresses in stm32g431xx.h, stm32g474xx.h&lt;/font&gt; &amp;nbsp; Hardware: GPIO, TIM, FDCAN, ADC... are driven by reading/writing fixed memory addresses, e.g. GPIOA-&amp;gt;ODR at 0x48000014" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;Peripheral registers (memory-mapped I/O)&lt;/b&gt;  (platform/stm32g4xx/HAL_Drivers/CMSIS/Device/ST/STM32G4xx/Include/)&lt;br&gt;Hardware: GPIO, TIM, FDCAN, ADC... are driven by reading/writing fixed memory addresses, e.g. GPIOA-&amp;gt;ODR at 0x48000014&lt;br&gt;Files: addresses in stm32g431xx.h, stm32g474xx.h&lt;br&gt;Used by: HAL_Drivers&lt;/div&gt;" id="b-regs">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;verticalAlign=middle;" vertex="1">
+            <mxGeometry height="100" width="1410" x="100" y="790" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;HAL_Drivers/&lt;/b&gt; &amp;nbsp; &lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;STM32G4xx_HAL_Driver, CMSIS&lt;/font&gt; &amp;nbsp; Vendor: ST&#39;s HAL + ARM CMSIS (not our code)" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;HAL_Drivers/&lt;/b&gt;  (platform/stm32g4xx/HAL_Drivers/)&lt;br&gt;Vendor: ST&#39;s HAL + ARM CMSIS (not our code)&lt;br&gt;Files: STM32G4xx_HAL_Driver, CMSIS&lt;br&gt;Used by: every STM32G4 board (via cmake/stm32cubemx)&lt;/div&gt;" id="b-hal">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;verticalAlign=middle;" vertex="1">
+            <mxGeometry height="50" width="1410" x="100" y="650" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;can_stm32g4xx&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;can_stm32g4xx.h/.cpp&lt;/font&gt;&lt;br&gt;Impl: CanSTM32G4XX : CanInterface (FDCAN)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: PDB_24, mini_rover&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#a05000&quot; style=&quot;font-size:10px&quot;&gt;board must provide: platform_defs.h, gpio_config_base.h&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;can_stm32g4xx&lt;/b&gt;  (platform/stm32g4xx/Modules/can/)&lt;br&gt;Impl: CanSTM32G4XX : CanInterface (FDCAN)&lt;br&gt;Files: can_stm32g4xx.h/.cpp&lt;br&gt;Used by: PDB_24, mini_rover&lt;br&gt;The board project must provide: platform_defs.h, gpio_config_base.h&lt;/div&gt;" id="b-can_stm32">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="100" y="490" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;clock_stm32g4xx&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;clock_stm32g4xx.hpp/.cpp&lt;/font&gt;&lt;br&gt;Impl: ClockSTM32G4XX : ClockInterface (HAL_GetTick)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: PDB_24, mini_rover&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;clock_stm32g4xx&lt;/b&gt;  (platform/stm32g4xx/Modules/clock/)&lt;br&gt;Impl: ClockSTM32G4XX : ClockInterface (HAL_GetTick)&lt;br&gt;Files: clock_stm32g4xx.hpp/.cpp&lt;br&gt;Used by: PDB_24, mini_rover&lt;/div&gt;" id="b-clock_stm32">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="340" y="490" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;primitive_io_stm32g4xx&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;primitive_io_stm32g4xx.hpp/.cpp&lt;/font&gt;&lt;br&gt;Impl: digital out + analog in (ADC) for STM32G4&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: PDB_24, mini_rover&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;primitive_io_stm32g4xx&lt;/b&gt;  (platform/stm32g4xx/Modules/primitive_io/)&lt;br&gt;Impl: digital out + analog in (ADC) for STM32G4&lt;br&gt;Files: primitive_io_stm32g4xx.hpp/.cpp&lt;br&gt;Used by: PDB_24, mini_rover&lt;/div&gt;" id="b-pio_stm32">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="820" y="490" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;servo_stm32g4xx&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;servo_stm32g4xx.hpp/.cpp&lt;/font&gt;&lt;br&gt;Impl: ServoSTM32G4XX : ServoInterface (timer PWM)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: mini_rover&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#a05000&quot; style=&quot;font-size:10px&quot;&gt;board must provide: platform_defs.h&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;servo_stm32g4xx&lt;/b&gt;  (platform/stm32g4xx/Modules/servo/)&lt;br&gt;Impl: ServoSTM32G4XX : ServoInterface (timer PWM)&lt;br&gt;Files: servo_stm32g4xx.hpp/.cpp&lt;br&gt;Used by: mini_rover&lt;br&gt;The board project must provide: platform_defs.h&lt;/div&gt;" id="b-servo_stm32">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="1060" y="490" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;main_datatypes_stm32g4xx&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;main_datatypes_stm32g4xx.h&lt;/font&gt;&lt;br&gt;STM32 hardware structs (port/pin/timer/ADC)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: servo_stm32g4xx&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;main_datatypes_stm32g4xx&lt;/b&gt;  (platform/stm32g4xx/)&lt;br&gt;STM32 hardware structs (port/pin/timer/ADC)&lt;br&gt;Files: main_datatypes_stm32g4xx.h&lt;br&gt;Used by: servo_stm32g4xx&lt;/div&gt;" id="b-datatypes">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="1300" y="490" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;can/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;can_interface.h&lt;/font&gt;&lt;br&gt;Interface: CanInterface (init / send / read)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: via can_stm32g4xx&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;can/&lt;/b&gt;  (common_libraries/can/)&lt;br&gt;Interface: CanInterface (init / send / read)&lt;br&gt;Files: can_interface.h&lt;br&gt;Used by: via can_stm32g4xx&lt;/div&gt;" id="b-can">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="100" y="270" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;clock/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;clock_interface.hpp, timer, stopwatch&lt;/font&gt;&lt;br&gt;Interface: ClockInterface. Generic: Timer, Stopwatch&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: PDB_24, mini_rover&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;clock/&lt;/b&gt;  (common_libraries/clock/)&lt;br&gt;Interface: ClockInterface. Generic: Timer, Stopwatch&lt;br&gt;Files: clock_interface.hpp, timer, stopwatch&lt;br&gt;Used by: PDB_24, mini_rover&lt;/div&gt;" id="b-clock">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="340" y="270" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;usr_leds/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;usr_led.hpp/.cpp&lt;/font&gt;&lt;br&gt;Generic: UsrLed / UsrLedControl (4 status LEDs)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: PDB_24, mini_rover&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;usr_leds/&lt;/b&gt;  (common_libraries/usr_leds/)&lt;br&gt;Generic: UsrLed / UsrLedControl (4 status LEDs)&lt;br&gt;Files: usr_led.hpp/.cpp&lt;br&gt;Used by: PDB_24, mini_rover&lt;/div&gt;" id="b-usr_leds">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="580" y="270" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;primitive_io/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;primitive_io_base.hpp&lt;/font&gt;&lt;br&gt;Interface: PrimitiveDigitalOutput, PrimitiveAnalogInput&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: via primitive_io_stm32g4xx&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;primitive_io/&lt;/b&gt;  (common_libraries/primitive_io/)&lt;br&gt;Interface: PrimitiveDigitalOutput, PrimitiveAnalogInput&lt;br&gt;Files: primitive_io_base.hpp&lt;br&gt;Used by: via primitive_io_stm32g4xx&lt;/div&gt;" id="b-pio">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="820" y="270" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;servo/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;servo_interface.hpp&lt;/font&gt;&lt;br&gt;Interface: ServoInterface (positional / continuous)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: via servo_stm32g4xx&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;servo/&lt;/b&gt;  (common_libraries/servo/)&lt;br&gt;Interface: ServoInterface (positional / continuous)&lt;br&gt;Files: servo_interface.hpp&lt;br&gt;Used by: via servo_stm32g4xx&lt;/div&gt;" id="b-servo">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="1060" y="270" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;comms/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;comms.h/.c, device_ids.h&lt;/font&gt;&lt;br&gt;Generic: CAN message format + device IDs, shared with ROS2&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: PDB_24, mini_rover, RoverFlake2 arm_hardware_interface&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#2d7d2d&quot; style=&quot;font-size:10px&quot;&gt;✓ unit tests&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;comms/&lt;/b&gt;  (common_libraries/comms/)&lt;br&gt;Generic: CAN message format + device IDs, shared with ROS2&lt;br&gt;Files: comms.h/.c, device_ids.h&lt;br&gt;Used by: PDB_24, mini_rover, RoverFlake2 arm_hardware_interface&lt;br&gt;Catch2 tests: common_libraries/comms/test/&lt;/div&gt;" id="b-comms">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="100" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;crc/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;crc.h/.c&lt;/font&gt;&lt;br&gt;Generic: CRC16 (CCITT-FALSE)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: via comms&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#2d7d2d&quot; style=&quot;font-size:10px&quot;&gt;✓ unit tests&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;crc/&lt;/b&gt;  (common_libraries/crc/)&lt;br&gt;Generic: CRC16 (CCITT-FALSE)&lt;br&gt;Files: crc.h/.c&lt;br&gt;Used by: via comms&lt;br&gt;Catch2 tests: common_libraries/crc/test/&lt;/div&gt;" id="b-crc">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;" vertex="1">
+            <mxGeometry height="130" width="210" x="340" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;low_pass_fir_filter/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;low_pass_fir_filter.h&lt;/font&gt;&lt;br&gt;Generic: moving-average low-pass filter (template)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: &lt;i&gt;nothing yet&lt;/i&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#2d7d2d&quot; style=&quot;font-size:10px&quot;&gt;✓ unit tests&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;low_pass_fir_filter/&lt;/b&gt;  (common_libraries/low_pass_fir_filter/)&lt;br&gt;Generic: moving-average low-pass filter (template)&lt;br&gt;Files: low_pass_fir_filter.h&lt;br&gt;Used by: nothing yet&lt;br&gt;Catch2 tests: common_libraries/low_pass_fir_filter/test/&lt;/div&gt;" id="b-lpf">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;dashed=1;fillColor=#ffffff;" vertex="1">
+            <mxGeometry height="130" width="210" x="580" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;sensors/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;sensor_interface.hpp&lt;/font&gt;&lt;br&gt;Interface: Sensor (no implementation yet)&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: &lt;i&gt;nothing yet&lt;/i&gt;&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;sensors/&lt;/b&gt;  (common_libraries/sensors/)&lt;br&gt;Interface: Sensor (no implementation yet)&lt;br&gt;Files: sensor_interface.hpp&lt;br&gt;Used by: nothing yet&lt;/div&gt;" id="b-sensors">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;dashed=1;fillColor=#ffffff;" vertex="1">
+            <mxGeometry height="130" width="210" x="820" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="&lt;b&gt;example/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; face=&quot;Courier New&quot;&gt;some_lib.h/.cpp&lt;/font&gt;&lt;br&gt;Template: how to write + test a module&lt;br&gt;&lt;font color=&quot;#555555&quot; style=&quot;font-size:10px&quot;&gt;used by: &lt;i&gt;nothing yet&lt;/i&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#2d7d2d&quot; style=&quot;font-size:10px&quot;&gt;✓ unit tests&lt;/font&gt;" tooltip="&lt;div style=&quot;font-size:15px;line-height:1.45;max-width:520px;padding:4px&quot;&gt;&lt;b&gt;example/&lt;/b&gt;  (common_libraries/example/)&lt;br&gt;Template: how to write + test a module&lt;br&gt;Files: some_lib.h/.cpp&lt;br&gt;Used by: nothing yet&lt;br&gt;Catch2 tests: common_libraries/example/test/&lt;/div&gt;" id="b-example">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacing=6;spacingTop=2;fontSize=11;dashed=1;fillColor=#ffffff;" vertex="1">
+            <mxGeometry height="130" width="210" x="1060" y="110" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="be-can_stm32-can" edge="1" parent="1" source="b-can_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=0;exitDx=0;exitDy=0;entryX=0.5000;entryY=1;entryDx=0;entryDy=0;" target="b-can" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-can_stm32-hal" edge="1" parent="1" source="b-can_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=1;exitDx=0;exitDy=0;entryX=0.0745;entryY=0;entryDx=0;entryDy=0;" target="b-hal" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-clock_stm32-clock" edge="1" parent="1" source="b-clock_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=0;exitDx=0;exitDy=0;entryX=0.5000;entryY=1;entryDx=0;entryDy=0;" target="b-clock" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-clock_stm32-hal" edge="1" parent="1" source="b-clock_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=1;exitDx=0;exitDy=0;entryX=0.2447;entryY=0;entryDx=0;entryDy=0;" target="b-hal" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-pio_stm32-pio" edge="1" parent="1" source="b-pio_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=0;exitDx=0;exitDy=0;entryX=0.5000;entryY=1;entryDx=0;entryDy=0;" target="b-pio" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-pio_stm32-hal" edge="1" parent="1" source="b-pio_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=1;exitDx=0;exitDy=0;entryX=0.5851;entryY=0;entryDx=0;entryDy=0;" target="b-hal" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-servo_stm32-servo" edge="1" parent="1" source="b-servo_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=0;exitDx=0;exitDy=0;entryX=0.5000;entryY=1;entryDx=0;entryDy=0;" target="b-servo" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-servo_stm32-pio" edge="1" parent="1" source="b-servo_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.2;exitY=0;exitDx=0;exitDy=0;entryX=0.8;entryY=1;entryDx=0;entryDy=0;" target="b-pio" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1102" y="445" />
+              <mxPoint x="988" y="445" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Rf_UBCeByExywCUTOW6k-1" connectable="0" parent="be-servo_stm32-pio" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;" value="This is a bit weird...&lt;br&gt;servo implementation was rushed" vertex="1">
+          <mxGeometry relative="1" x="0.2445" y="-2" as="geometry">
+            <mxPoint x="145" y="157" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="be-servo_stm32-datatypes" edge="1" parent="1" source="b-servo_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="b-datatypes" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-servo_stm32-hal" edge="1" parent="1" source="b-servo_stm32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=1;exitDx=0;exitDy=0;entryX=0.7553;entryY=0;entryDx=0;entryDy=0;" target="b-hal" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-datatypes-hal" edge="1" parent="1" source="b-datatypes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=1;exitDx=0;exitDy=0;entryX=0.9255;entryY=0;entryDx=0;entryDy=0;" target="b-hal" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-hal-regs" edge="1" parent="1" source="b-hal" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=1;exitDx=0;exitDy=0;entryX=0.5000;entryY=0;entryDx=0;entryDy=0;" target="b-regs" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-usr_leds-clock" edge="1" parent="1" source="b-usr_leds" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="b-clock" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-usr_leds-pio" edge="1" parent="1" source="b-usr_leds" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="b-pio" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be-can-comms" edge="1" parent="1" source="b-can" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=0.5000;exitY=0;exitDx=0;exitDy=0;entryX=0.5000;entryY=1;entryDx=0;entryDy=0;" target="b-comms" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="aV7lIzef-h6l9h2qt7Dz-1" connectable="0" parent="be-can-comms" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;" value="can/ constrains itself to comms message types" vertex="1">
+          <mxGeometry relative="1" x="-0.1538" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="be-comms-crc" edge="1" parent="1" source="b-comms" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;jettySize=auto;orthogonalLoop=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="b-crc" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
