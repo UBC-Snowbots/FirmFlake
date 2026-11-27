@@ -1434,7 +1434,7 @@ void stepper_timer_callback(struct k_timer *timer_id)
 				axes[i].pulse_state = !axes[i].pulse_state;
 
 				// Reset the timer
-				k_timer_start(&axes[i].stepper_timer, K_USEC(axes[i].current_speed), K_NO_WAIT);
+				k_timer_start(&axes[i].stepper_timer, K_USEC(axes[i].current_speed >> 1), K_NO_WAIT);
 			}
 			else
 			{
